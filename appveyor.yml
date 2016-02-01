@@ -1,0 +1,12 @@
+version: 1.0.{build}
+os: Visual Studio 2015
+configuration:
+- Release
+- Debug
+build:
+  project: C:\projects\amd-codexl-analyzer\CodeXL\AllProjectsBuild\CodeXLAnalyzerStandAlone.sln
+  parallel: true
+  verbosity: minimal
+artifacts:
+- path: 'C:\projects\amd-codexl-analyzer\CodeXL\AllProjectsBuild\..\Output\Debug\bin\*.exe'
+- path: 'C:\projects\amd-codexl-analyzer\CodeXL\AllProjectsBuild\..\Output\Release\bin\*.exe'
