@@ -1384,7 +1384,7 @@ static bool ReadProcessPlatformWow64(HANDLE hProcess, osRuntimePlatform& platfor
 {
     return ReadProcessPlatformT<ULONG64>(hProcess, platform);
 }
-
+#endif
 
 // ---------------------------------------------------------------------------
 // Name:        osExecAndGrabOutput
@@ -1498,4 +1498,4 @@ OS_API bool osExecAndGrabOutput(const char* cmd, const bool& cancelSignal, gtStr
     return ret;
 }
 
-#endif
+
