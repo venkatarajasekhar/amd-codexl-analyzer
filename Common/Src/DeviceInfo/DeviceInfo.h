@@ -1,11 +1,10 @@
-//=====================================================================
-// Copyright 2010-2016 (c), Advanced Micro Devices, Inc. All rights reserved.
-//
+//==============================================================================
+// Copyright (c) 2010-2016 Advanced Micro Devices, Inc. All rights reserved.
 /// \author AMD Developer Tools Team
-/// \file DeviceInfo.h 
+/// \file
 /// \brief  Device info table
-/// 
-//=====================================================================
+//==============================================================================
+
 #ifndef _DEVICE_INFO_H_
 #define _DEVICE_INFO_H_
 
@@ -39,6 +38,8 @@ enum GDT_HW_ASIC_TYPE
     GDT_CARRIZO_EMB,          ///< CZ APU EMBEDDED
     GDT_FIJI,                 ///< FIJI GPU
     GDT_STONEY,               ///< STONEY APU
+    GDT_ELLESMERE,            ///< ELLESMERE GPU
+    GDT_BAFFIN,               ///< BAFFIN GPU
     GDT_LAST                  ///< last
 };
 
@@ -47,11 +48,13 @@ enum GDT_HW_ASIC_TYPE
 //------------------------------------------------------------------------------------
 enum GDT_HW_GENERATION
 {
-    GDT_HW_GENERATION_NONE,             ///< undefined hw generation
-    GDT_HW_GENERATION_NVIDIA,           ///< nvidia GPU
-    GDT_HW_GENERATION_SOUTHERNISLAND,   ///< GFX IP 6
-    GDT_HW_GENERATION_SEAISLAND,        ///< GFX IP 7
-    GDT_HW_GENERATION_VOLCANICISLAND,   ///< GFX IP 8
+    GDT_HW_GENERATION_NONE,                                           ///< undefined hw generation
+    GDT_HW_GENERATION_NVIDIA,                                         ///< nvidia GPU
+    GDT_HW_GENERATION_INTEL,                                          ///< intel GPU
+    GDT_HW_GENERATION_SOUTHERNISLAND,                                 ///< GFX IP 6
+    GDT_HW_GENERATION_FIRST_AMD = GDT_HW_GENERATION_SOUTHERNISLAND,   ///< first AMD generation
+    GDT_HW_GENERATION_SEAISLAND,                                      ///< GFX IP 7
+    GDT_HW_GENERATION_VOLCANICISLAND,                                 ///< GFX IP 8
     GDT_HW_GENERATION_LAST
 };
 

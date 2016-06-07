@@ -37,6 +37,7 @@ env.Append( CPPPATH = [
 	env['CXL_common_dir'] + '/Lib/Ext/glew/1.9.0/include',
 	env['CXL_common_dir'] + '/Src/ADLUtil',
 	env['CXL_common_dir'] + '/Src/AMDTMutex',
+	env['CXL_common_dir'] + '/Src/ACLModuleManager',
 	env['CXL_common_dir'] + '/Lib/AMD/ADL/include',
 	env['CXL_common_dir'] + '/Src/TSingleton',
 	env['CXL_common_dir'] + '/Src/DeviceInfo',
@@ -59,6 +60,7 @@ commonsrc_files = Split(
 	buildDirPath + '/CElf/Src/CElfSection.cpp ' +
 	buildDirPath + '/CElf/Src/CElfStringTable.cpp ' +
 	buildDirPath + '/CElf/Src/CElfSymbolTable.cpp ' +
+	buildDirPath + '/ACLModuleManager/ACLModuleManager.cpp ' +
 	buildDirPath + '/DeviceInfo/DeviceInfoUtils.cpp'
 	)
 
@@ -68,7 +70,6 @@ sources = \
 	"src/beProgramBuilder.cpp",
 	"src/beProgramBuilderOpenCL.cpp",
 	"src/beProgramBuilderOpenGL.cpp",
-	"src/beProgramBuilderGL.cpp",
 	"src/beProgramBuilderVulkan.cpp",
 	"src/beUtils.cpp",
 	"src/beDriverUtils.cpp",
@@ -90,8 +91,6 @@ sources = \
 	"Emulator/Parser/ParserSIVINTRP.cpp",
 	"Emulator/Parser/ParserSIVOP.cpp",
 	"Emulator/Parser/Instruction.cpp",
-	"ExternGL/elf_decoder.cpp",
-	"ExternGL/elf_dumper.cpp",
 ]
 
 env.Append( LIBPATH = [ 

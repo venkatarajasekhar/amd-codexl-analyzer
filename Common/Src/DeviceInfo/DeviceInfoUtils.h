@@ -1,11 +1,11 @@
-//=====================================================================
-// Copyright 2010-2016 (c), Advanced Micro Devices, Inc. All rights reserved.
-//
+//==============================================================================
+// Copyright (c) 2010-2016 Advanced Micro Devices, Inc. All rights reserved.
 /// \author AMD Developer Tools Team
-/// \file DeviceInfoUtils.h 
+/// \file
 /// \brief  Device info utils class
-/// 
-//=====================================================================
+//==============================================================================
+
+
 #ifndef _DEVICE_INFO_UTILS_H_
 #define _DEVICE_INFO_UTILS_H_
 
@@ -13,7 +13,7 @@
 #include <cstring>
 #include <map>
 #include <vector>
-#include <DeviceInfo.h>
+#include "DeviceInfo.h"
 
 //------------------------------------------------------------------------------------
 /// Device info utils
@@ -193,28 +193,6 @@ public:
         }
 
         return bRet;
-    }
-
-    /// Gets the number of SX blocks in a specific piece of hardware. This is used to override the device base info
-    /// \param pDeviceInfo The device info
-    /// \param generation The hardware generation
-    /// \return The number of SX blocks
-    size_t GetNumSX(const GDT_DeviceInfo* pDeviceInfo, GDT_HW_GENERATION generation)
-    {
-        // We need to figure out how many SX (pixel shader cross bars) there are
-        size_t numSX = 0;
-
-        if (generation == GDT_HW_GENERATION_SEAISLAND)
-        {
-            numSX = pDeviceInfo->m_nNumShaderEngines * pDeviceInfo->m_nNumSHPerSE;
-        }
-        else
-        {
-            // All other HW uses the following:
-            numSX = pDeviceInfo->m_nNumShaderEngines * 2;
-        }
-
-        return numSX;
     }
 
     /// Translates the reported device name to the true device name exposed in the DeviceInfo table.

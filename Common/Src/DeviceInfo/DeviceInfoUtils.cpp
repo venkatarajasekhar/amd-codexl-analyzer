@@ -1,11 +1,9 @@
-//=====================================================================
-// Copyright 2016 (c), Advanced Micro Devices, Inc. All rights reserved.
-//
+//==============================================================================
+// Copyright (c) 2010-2016 Advanced Micro Devices, Inc. All rights reserved.
 /// \author AMD Developer Tools Team
-/// \file DeviceInfoUtils.cpp 
+/// \file
 /// \brief  Device info utils class
-/// 
-//=====================================================================
+//==============================================================================
 
 #ifdef _WIN32
     #include <windows.h>
@@ -22,8 +20,8 @@ static GDT_GfxCardInfo gs_cardInfo[] =
 {
     { GDT_TAHITI_XT,  0x6790, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Tahiti", "Not Used" },
     { GDT_TAHITI_PRO, 0x6792, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Tahiti", "Not Used" },
-    { GDT_TAHITI_XT,  0x6798, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Tahiti", "AMD Radeon HD 7900 Series" },
-    { GDT_TAHITI_XT,  0x6799, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Tahiti", "SI NEW ZEALAND" },
+    { GDT_TAHITI_XT,  0x6798, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Tahiti", "AMD Radeon R9 200 / HD 7900 Series" },
+    { GDT_TAHITI_XT,  0x6799, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Tahiti", "AMD Radeon HD 7900 Series" },
     { GDT_TAHITI_PRO, 0x679A, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Tahiti", "AMD Radeon HD 7900 Series" },
     { GDT_TAHITI_PRO, 0x679B, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Tahiti", "AMD Radeon HD 7900 Series" },
     { GDT_TAHITI_PRO, 0x679E, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Tahiti", "AMD Radeon HD 7800 Series" },
@@ -39,7 +37,7 @@ static GDT_GfxCardInfo gs_cardInfo[] =
     { GDT_PITCAIRN_XT,  0x684C, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Pitcairn", "ATI FirePro V(FireGL V) Graphics Adapter" },
     { GDT_PITCAIRN_XT,  0x6800, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Pitcairn", "AMD Radeon HD 7970M" },
     { GDT_PITCAIRN_PRO, 0x6801, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Pitcairn", "AMD Radeon(TM) HD8970M" },
-    { GDT_PITCAIRN_XT,  0x6806, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Pitcairn", "NEPTUNE (6806)" },
+    { GDT_PITCAIRN_XT,  0x6806, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Pitcairn", "AMD Radeon (TM) R9 M290X" },
     { GDT_PITCAIRN_XT,  0x6810, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Pitcairn", "AMD Radeon R9 200 Series" },
     { GDT_PITCAIRN_XT,  0x6810, 0x81, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Pitcairn", "AMD Radeon (TM) R9 370 Series" },
     { GDT_PITCAIRN_PRO, 0x6811, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Pitcairn", "AMD Radeon R9 200 Series" },
@@ -53,7 +51,7 @@ static GDT_GfxCardInfo gs_cardInfo[] =
     { GDT_CAPEVERDE_XT,  0x6821, 0x87, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Capeverde", "AMD Radeon (TM) R7 M380" },
     { GDT_CAPEVERDE_XT,  0x6821, 0x8B, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Capeverde", "DID:6821 RID:8B" },
     { GDT_CAPEVERDE_PRO, 0x6822, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Capeverde", "AMD Radeon E8860" },
-    { GDT_CAPEVERDE_PRO, 0x6823, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Capeverde", "AMD Radeon HD 8800M Series" },
+    { GDT_CAPEVERDE_PRO, 0x6823, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Capeverde", "AMD Radeon R9 M200X Series" },
     { GDT_CAPEVERDE_PRO, 0x6824, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Capeverde", "Not Used" },
     { GDT_CAPEVERDE_XT,  0x6825, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Capeverde", "AMD Radeon HD 7800M Series" },
     { GDT_CAPEVERDE_PRO, 0x6826, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Capeverde", "AMD Radeon HD 7700M Series" },
@@ -69,7 +67,7 @@ static GDT_GfxCardInfo gs_cardInfo[] =
     { GDT_CAPEVERDE_XT,  0x6830, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Capeverde", "AMD Radeon 7800M Series" },
     { GDT_CAPEVERDE_XT,  0x6831, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Capeverde", "AMD Radeon 7700M Series" },
     { GDT_CAPEVERDE_PRO, 0x6835, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Capeverde", "AMD Radeon R7 Series / HD 9000 Series" },
-    { GDT_CAPEVERDE_XT,  0x6837, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Capeverde", "AMD Radeon HD7700 Series" },
+    { GDT_CAPEVERDE_XT,  0x6837, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Capeverde", "AMD Radeon HD 7700 Series" },
     { GDT_CAPEVERDE_XT,  0x6838, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Capeverde", "Not Used" },
     { GDT_CAPEVERDE_XT,  0x6839, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Capeverde", "Not Used" },
     { GDT_CAPEVERDE_PRO, 0x683B, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Capeverde", "Not Used" },
@@ -79,11 +77,14 @@ static GDT_GfxCardInfo gs_cardInfo[] =
     // Oland
     { GDT_OLAND, 0x6608, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Oland", "AMD FirePro W2100" },
     { GDT_OLAND, 0x6610, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Oland", "AMD Radeon R7 200 Series" },
-    { GDT_OLAND, 0x6610, 0x83, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Oland", "AMD Radeon (TM) R5 340" },
     { GDT_OLAND, 0x6610, 0x81, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Oland", "AMD Radeon (TM) R7 350" },
+    { GDT_OLAND, 0x6610, 0x83, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Oland", "AMD Radeon (TM) R5 340" },
+    { GDT_OLAND, 0x6610, 0x87, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Oland", "AMD Radeon R7 200 Series" },
     { GDT_OLAND, 0x6611, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Oland", "AMD Radeon R7 200 Series" },
+    { GDT_OLAND, 0x6611, 0x87, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Oland", "AMD Radeon R7 200 Series" },
     { GDT_OLAND, 0x6613, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Oland", "AMD Radeon R7 200 Series" },
     { GDT_OLAND, 0x6617, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Oland", "AMD Radeon R7 240 Series" },
+    { GDT_OLAND, 0x6617, 0x87, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Oland", "AMD Radeon R7 200 Series" },
     { GDT_OLAND, 0x6617, 0xC7, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Oland", "AMD Radeon R7 240 Series" },
     { GDT_OLAND, 0x6631, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Oland", "OLAND (6631)" },
 
@@ -105,14 +106,14 @@ static GDT_GfxCardInfo gs_cardInfo[] =
 
     // Hainan
     { GDT_HAINAN, 0x6660, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Hainan", "AMD Radeon HD 8600M Series" },
-    { GDT_HAINAN, 0x6660, 0x83, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Hainan", "AMD Radeon (TM) R5 M330" },
     { GDT_HAINAN, 0x6660, 0x81, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Hainan", "AMD Radeon (TM) R5 M335" },
+    { GDT_HAINAN, 0x6660, 0x83, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Hainan", "AMD Radeon (TM) R5 M330" },
     { GDT_HAINAN, 0x6663, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Hainan", "AMD Radeon HD 8500M Series" },
     { GDT_HAINAN, 0x6663, 0x83, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Hainan", "AMD Radeon (TM) R5 M320" },
     { GDT_HAINAN, 0x6664, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Hainan", "AMD Radeon R5 M200 Series" },
     { GDT_HAINAN, 0x6665, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Hainan", "AMD Radeon R5 M230 Series" },
     { GDT_HAINAN, 0x6665, 0x83, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Hainan", "AMD Radeon (TM) R5 M320" },
-    { GDT_HAINAN, 0x6665, 0xC3, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Hainan", "AMD Radeon R5 M435 Series" },
+    { GDT_HAINAN, 0x6665, 0xC3, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Hainan", "AMD Radeon R5 M430" },
     { GDT_HAINAN, 0x6666, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Hainan", "AMD Radeon R5 M200 Series" },
     { GDT_HAINAN, 0x6667, 0x00, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Hainan", "AMD Radeon R5 M200 Series" },
     { GDT_HAINAN, 0x6667, 0x83, GDT_HW_GENERATION_SOUTHERNISLAND, false, "Hainan", "EXO ULP (6667)" },
@@ -231,20 +232,21 @@ static GDT_GfxCardInfo gs_cardInfo[] =
     { GDT_KALINDI, 0x9853, 0x40, GDT_HW_GENERATION_SEAISLAND, true, "Mullins", "AMD Radeon(TM) R2 Graphics" },
 
     // Mullins
-    { GDT_KALINDI, 0x9854, 0x02, GDT_HW_GENERATION_SEAISLAND, true, "Mullins", "AMD Radeon(TM) R3 Graphics" },
-    { GDT_KALINDI, 0x9854, 0x07, GDT_HW_GENERATION_SEAISLAND, true, "Mullins", "AMD Radeon(TM) R3 Graphics" },
-    { GDT_KALINDI, 0x9854, 0x05, GDT_HW_GENERATION_SEAISLAND, true, "Mullins", "AMD Radeon(TM) R2 Graphics" },
-    { GDT_KALINDI, 0x9854, 0x06, GDT_HW_GENERATION_SEAISLAND, true, "Mullins", "AMD Radeon(TM) R3 Graphics" },
-    { GDT_KALINDI, 0x9854, 0x01, GDT_HW_GENERATION_SEAISLAND, true, "Mullins", "AMD Radeon(TM) R3E Graphics" },
     { GDT_KALINDI, 0x9854, 0x00, GDT_HW_GENERATION_SEAISLAND, true, "Mullins", "AMD Radeon(TM) R3 Graphics" },
-    { GDT_KALINDI, 0x9855, 0x05, GDT_HW_GENERATION_SEAISLAND, true, "Mullins", "AMD Radeon(TM) R4 Graphics" },
+    { GDT_KALINDI, 0x9854, 0x01, GDT_HW_GENERATION_SEAISLAND, true, "Mullins", "AMD Radeon(TM) R3E Graphics" },
+    { GDT_KALINDI, 0x9854, 0x02, GDT_HW_GENERATION_SEAISLAND, true, "Mullins", "AMD Radeon(TM) R3 Graphics" },
+    { GDT_KALINDI, 0x9854, 0x05, GDT_HW_GENERATION_SEAISLAND, true, "Mullins", "AMD Radeon(TM) R2 Graphics" },
+    { GDT_KALINDI, 0x9854, 0x06, GDT_HW_GENERATION_SEAISLAND, true, "Mullins", "AMD Radeon(TM) R4 Graphics" },
+    { GDT_KALINDI, 0x9854, 0x07, GDT_HW_GENERATION_SEAISLAND, true, "Mullins", "AMD Radeon(TM) R3 Graphics" },
     { GDT_KALINDI, 0x9855, 0x02, GDT_HW_GENERATION_SEAISLAND, true, "Mullins", "AMD Radeon(TM) R6 Graphics" },
+    { GDT_KALINDI, 0x9855, 0x05, GDT_HW_GENERATION_SEAISLAND, true, "Mullins", "AMD Radeon(TM) R4 Graphics" },
     { GDT_KALINDI, 0x9856, 0x07, GDT_HW_GENERATION_SEAISLAND, true, "Mullins", "AMD Radeon(TM) R1E Graphics" },
-    { GDT_KALINDI, 0x9856, 0x01, GDT_HW_GENERATION_SEAISLAND, true, "Mullins", "AMD Radeon(TM) R2E Graphics" },
     { GDT_KALINDI, 0x9856, 0x00, GDT_HW_GENERATION_SEAISLAND, true, "Mullins", "AMD Radeon(TM) R2 Graphics" },
-    { GDT_KALINDI, 0x9856, 0x06, GDT_HW_GENERATION_SEAISLAND, true, "Mullins", "AMD Radeon(TM) R2 Graphics" },
-    { GDT_KALINDI, 0x9856, 0x05, GDT_HW_GENERATION_SEAISLAND, true, "Mullins", "AMD Radeon(TM) R1E Graphics" },
+    { GDT_KALINDI, 0x9856, 0x01, GDT_HW_GENERATION_SEAISLAND, true, "Mullins", "AMD Radeon(TM) R2E Graphics" },
     { GDT_KALINDI, 0x9856, 0x02, GDT_HW_GENERATION_SEAISLAND, true, "Mullins", "AMD Radeon(TM) R2 Graphics" },
+    { GDT_KALINDI, 0x9856, 0x05, GDT_HW_GENERATION_SEAISLAND, true, "Mullins", "AMD Radeon(TM) R1E Graphics" },
+    { GDT_KALINDI, 0x9856, 0x06, GDT_HW_GENERATION_SEAISLAND, true, "Mullins", "AMD Radeon(TM) R2 Graphics" },
+    { GDT_KALINDI, 0x9856, 0x07, GDT_HW_GENERATION_SEAISLAND, true, "Mullins", "AMD Radeon(TM) R1E Graphics" },
     { GDT_KALINDI, 0x9857, 0x00, GDT_HW_GENERATION_SEAISLAND, true, "Mullins", "MULLINS (9857)" },
     { GDT_KALINDI, 0x9858, 0x00, GDT_HW_GENERATION_SEAISLAND, true, "Mullins", "MULLINS (9858)" },
     { GDT_KALINDI, 0x9859, 0x00, GDT_HW_GENERATION_SEAISLAND, true, "Mullins", "MULLINS (9859)" },
@@ -294,24 +296,25 @@ static GDT_GfxCardInfo gs_cardInfo[] =
     { GDT_CARRIZO, 0x9874, 0xC5, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon R6 Graphics" },
     { GDT_CARRIZO, 0x9874, 0xC6, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon R6 Graphics" },
     { GDT_CARRIZO, 0x9874, 0xC7, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon R5 Graphics" },
+    { GDT_CARRIZO_EMB, 0x9874, 0x81, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon R6 Graphics" },
     { GDT_CARRIZO_EMB, 0x9874, 0x84, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon R7 Graphics" },
     { GDT_CARRIZO_EMB, 0x9874, 0x85, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon R6 Graphics" },
     { GDT_CARRIZO_EMB, 0x9874, 0x87, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon R5 Graphics" },
-    { GDT_CARRIZO_EMB, 0x9874, 0x81, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon R6 Graphics" },
     { GDT_CARRIZO_EMB, 0x9874, 0x88, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon R7E Graphics" },
     { GDT_CARRIZO_EMB, 0x9874, 0x89, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon R6E Graphics" },
-    { GDT_CARRIZO, 0x9874, 0xC8, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon(TM) R7 Graphics" },
-    { GDT_CARRIZO, 0x9874, 0xC9, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon(TM) R6 Graphics" },
-    { GDT_CARRIZO, 0x9874, 0xCA, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon(TM) R6 Graphics" },
-    { GDT_CARRIZO, 0x9874, 0xCB, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon(TM) R5 Graphics" },
-    { GDT_CARRIZO, 0x9874, 0xCC, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon(TM) R7 Graphics" },
-    { GDT_CARRIZO, 0x9874, 0xCD, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon(TM) R6 Graphics" },
-    { GDT_CARRIZO, 0x9874, 0xCE, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon(TM) R6 Graphics" },
-    { GDT_CARRIZO, 0x9874, 0xE1, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon(TM) R7 Graphics" },
-    { GDT_CARRIZO, 0x9874, 0xE2, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon(TM) R6 Graphics" },
-    { GDT_CARRIZO, 0x9874, 0xE3, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon(TM) R7 Graphics" },
-    { GDT_CARRIZO, 0x9874, 0xE4, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon(TM) R6 Graphics" },
-    { GDT_CARRIZO, 0x9874, 0xE5, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon(TM) R5 Graphics" },
+    { GDT_CARRIZO, 0x9874, 0xC8, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon R7 Graphics" },
+    { GDT_CARRIZO, 0x9874, 0xC9, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon R7 Graphics" },
+    { GDT_CARRIZO, 0x9874, 0xCA, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon R5 Graphics" },
+    { GDT_CARRIZO, 0x9874, 0xCB, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon R5 Graphics" },
+    { GDT_CARRIZO, 0x9874, 0xCC, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon R7 Graphics" },
+    { GDT_CARRIZO, 0x9874, 0xCD, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon R7 Graphics" },
+    { GDT_CARRIZO, 0x9874, 0xCE, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon R5 Graphics" },
+    { GDT_CARRIZO, 0x9874, 0xE1, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon R7 Graphics" },
+    { GDT_CARRIZO, 0x9874, 0xE2, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon R7 Graphics" },
+    { GDT_CARRIZO, 0x9874, 0xE3, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon R7 Graphics" },
+    { GDT_CARRIZO, 0x9874, 0xE4, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon R7 Graphics" },
+    { GDT_CARRIZO, 0x9874, 0xE5, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon R5 Graphics" },
+    { GDT_CARRIZO, 0x9874, 0xE6, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "AMD Radeon R5 Graphics" },
 
     { GDT_CARRIZO, 0x9875, 0x00, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "CARRIZO 9875" },
     { GDT_CARRIZO, 0x9876, 0x00, GDT_HW_GENERATION_VOLCANICISLAND, true, "Carrizo", "CARRIZO 9876" },
@@ -319,11 +322,11 @@ static GDT_GfxCardInfo gs_cardInfo[] =
 
     // Fiji
     { GDT_FIJI, 0x7300, 0x00, GDT_HW_GENERATION_VOLCANICISLAND, false, "Fiji", "AMD Radeon (TM) Graphics Processor" },
+    { GDT_FIJI, 0x7300, 0xC0, GDT_HW_GENERATION_VOLCANICISLAND, false, "Fiji", "AMD Radeon Graphics Processor" },
     { GDT_FIJI, 0x7300, 0xC1, GDT_HW_GENERATION_VOLCANICISLAND, false, "Fiji", "AMD FirePro Processor" },
     { GDT_FIJI, 0x7300, 0xC8, GDT_HW_GENERATION_VOLCANICISLAND, false, "Fiji", "AMD Radeon (TM) R9 Fury Series" },
+    { GDT_FIJI, 0x7300, 0xC9, GDT_HW_GENERATION_VOLCANICISLAND, false, "Fiji", "Radeon(TM) Pro Duo" },
     { GDT_FIJI, 0x7300, 0xCB, GDT_HW_GENERATION_VOLCANICISLAND, false, "Fiji", "AMD Radeon (TM) R9 Fury Series" },
-    { GDT_FIJI, 0x7300, 0xC9, GDT_HW_GENERATION_VOLCANICISLAND, false, "Fiji", "AMD Radeon (TM) Graphics Processor" },
-    { GDT_FIJI, 0x7300, 0xC0, GDT_HW_GENERATION_VOLCANICISLAND, false, "Fiji", "AMD Radeon Graphics Processor" },
     { GDT_FIJI, 0x7300, 0xCA, GDT_HW_GENERATION_VOLCANICISLAND, false, "Fiji", "AMD Radeon (TM) R9 Fury Series" },
 };
 
@@ -355,6 +358,8 @@ static GDT_DeviceInfo gs_deviceInfo[] =
     { 1, 10, 1, 8, 1, 64, 1, 3, 4, true }, // GDT_CARRIZO_EM
     { 4, 10, 1, 8, 4, 64, 1, 16, 4, true }, // GDT_FIJI
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, false }, // GDT_STONEY placeholder
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, false }, // GDT_ELLESMERE placeholder
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, false }, // GDT_BAFFIN placeholder
 };
 
 static size_t gs_cardInfoSize = sizeof(gs_cardInfo) / sizeof(GDT_GfxCardInfo);
@@ -389,6 +394,7 @@ void AMDTDeviceInfoManager::CallInitInternalDeviceInfo() const
 {
     static const char* initFuncName = "InitInternalDeviceInfo";
     static bool initFuncCalled = false;
+
     if (!initFuncCalled)
     {
         typedef void(*DeviceInfoUtilsReadyFunc)();
@@ -399,6 +405,7 @@ void AMDTDeviceInfoManager::CallInitInternalDeviceInfo() const
 #ifdef _LINUX
         func = (DeviceInfoUtilsReadyFunc)dlsym(nullptr, initFuncName);
 #endif
+
         if (nullptr != func)
         {
             func();
