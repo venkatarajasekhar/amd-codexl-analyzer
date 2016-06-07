@@ -25,6 +25,13 @@ The Radeon Software Crimson Edition or AMD Catalyst release must be installed to
 ### Building on Windows ###
 AMD CodeXL Static Analyzer builds with Visual Studio 2015.
 Open the solution file at \CodeXL\AllProjectsBuild\CodeXLAnalyzerStandAlone.sln and build all of the projects.
+Note: to run Vulkan, OpenGL and Live Register Analysis on Windows, you need to do the following:
+* OpenGL: the contents of Common\Lib\AMD\OpenGL\VirtualContext\Release\win32 should be copied to a folder named 'x86' under the build output folder.
+* OpenGL: the contents of Common\Lib\AMD\OpenGL\VirtualContext\Release\win64 should be copied to a folder named 'x64' under the build output folder.
+* Vulkan: the contents of Common\Lib\AMD\Vulkan\rev_1_0_0\Release\win32 should be copied to a folder named 'x86' under the build output folder.
+* Vulkan: the contents of Common\Lib\AMD\Vulkan\rev_1_0_0\Release\win64 should be copied to a folder named 'x64' under the build output folder.
+* Live Register Analysis: the contents of Common\Lib\AMD\ShaderAnalysis\Windows\x86 should be copied to a folder named 'x86' under the build output folder.
+A post-build script will be added in the future.
 
 ### Building on Linux ###
 One time setup:
@@ -32,6 +39,11 @@ One time setup:
 * sudo apt-get install libglu1-mesa-dev mesa-common-dev libgtk2.0-dev
 * sudo apt-get install zlib1g-dev libx11-dev:i386
 * sudo apt-get install scons
+Note: to run Vulkan, OpenGL and Live Register Analysis on Linux, you need to do the following:
+* OpenGL: the contents of Common/Lib/AMD/OpenGL/VirtualContext/Release/lnx64 should be copied to the build output folder.
+* Vulkan: the contents of Common/Lib/AMD/Vulkan/rev_1_0_0/Release/lnx64 should be copied to the build output folder.
+* Live Register Analysis: the contents of Common/Lib/AMD/ShaderAnalysis/Linux/x64 should be copied to the build output folder.
+A post-build script will be added in the future.
 
 #### Building on CENTOS 6.X ####
 Install compiler 4.7.2
