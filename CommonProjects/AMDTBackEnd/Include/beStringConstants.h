@@ -1,10 +1,3 @@
-//=====================================================================
-// Copyright 2016 (c), Advanced Micro Devices, Inc. All rights reserved.
-//
-/// \author AMD Developer Tools Team
-/// \file beStringConstants.h 
-/// 
-//=====================================================================
 #ifndef __beStringConstants_h
 #define __beStringConstants_h
 
@@ -613,6 +606,11 @@
 #define DEVICE_NAME_CEDAR    "Cedar"
 #define DEVICE_NAME_TAHITI   "Tahiti"
 #define DEVICE_NAME_HAWAII   "Hawaii"
+#define DEVICE_NAME_KALINDI  "Kalindi"
+#define DEVICE_NAME_GODAVARI "Godavari"
+#define DEVICE_NAME_AMUR     "Amur"
+#define DEVICE_NAME_NOLAN    "Nolan"
+#define DEVICE_NAME_STONEY   "Stoney"
 
 // DUMMY SHADERS.
 #define BE_STR_DUMMY_VRTX_SHADER "#version 330 core\nlayout(location = 0) in vec3 vertexPosition_modelspace;\nvoid main()\n{}"
@@ -620,5 +618,7 @@
 
 #define BE_STR_FAILED_TO_PARSE_ISA_LINE L"Failed to parse ISA line: "
 
+// Versions.
+#define BE_STR_VULKAN_VERSION L"Based on Vulkan 1.0 Specification."
 
 #endif // __beStringConstants_h

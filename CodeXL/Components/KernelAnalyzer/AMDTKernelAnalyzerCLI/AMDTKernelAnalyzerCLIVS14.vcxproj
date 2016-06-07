@@ -128,7 +128,6 @@
     <ClCompile Include="..\..\..\..\Common\Src\DeviceInfo\DeviceInfoUtils.cpp" />
     <ClCompile Include="src\kcCLICommanderCL.cpp" />
     <ClCompile Include="src\kcCLICommanderDX.cpp" />
-    <ClCompile Include="src\kcCLICommanderGL.cpp" />
     <ClCompile Include="src\kcCLICommanderOpenGL.cpp" />
     <ClCompile Include="src\kcCLICommanderVulkan.cpp" />
     <ClCompile Include="src\kcConfig.cpp" />
@@ -146,7 +145,6 @@
     <ClInclude Include="src\kcCLICommander.h" />
     <ClInclude Include="src\kcCLICommanderCL.h" />
     <ClInclude Include="src\kcCLICommanderDX.h" />
-    <ClInclude Include="src\kcCLICommanderGL.h" />
     <ClInclude Include="src\kcCLICommanderOpenGL.h" />
     <ClInclude Include="src\kcCLICommanderVulkan.h" />
     <ClInclude Include="src\kcCliStringConstants.h" />

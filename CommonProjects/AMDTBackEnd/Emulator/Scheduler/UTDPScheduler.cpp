@@ -1,6 +1,6 @@
 //=============================================================
-/// Copyright 2013-2016 (c), Advanced Micro Devices, Inc.
-///
+// Copyright (c) 2013 Advanced Micro Devices, Inc.
+//
 /// \file   UTDPScheduler.cpp
 /// \author GPU Developer Tools
 /// \version $Revision: #3 $
@@ -9,7 +9,7 @@
 //=============================================================
 // $Id: //devtools/main/CodeXL/Components/KernelAnalyzer/AMDTKernelAnalyzer/src/Emulator/Scheduler/UTDPScheduler.cpp#3 $
 // Last checkin:   $DateTime: 2014/01/08 09:22:31 $
-// Last edited by: $Author:  AMD Developer Tools Team
+// Last edited by: $Author: delifaz $
 // Change list:    $Change: 485956 $
 //=============================================================
 

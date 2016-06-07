@@ -1,10 +1,3 @@
-//=====================================================================
-// Copyright 2016 (c), Advanced Micro Devices, Inc. All rights reserved.
-//
-/// \author AMD Developer Tools Team
-/// \file beProgramBuilder.h 
-/// 
-//=====================================================================
 #ifndef _BEPROGRAMBUILDER_H_
 #define _BEPROGRAMBUILDER_H_
 
@@ -74,17 +67,17 @@ public:
     virtual void ReleaseProgram() = 0;
 
     /// retrieve all devices as got from the loaded module
-    virtual beKA::beStatus GetDeviceTable(std::vector<GDT_GfxCardInfo>& table) const = 0;
+    virtual beKA::beStatus GetDeviceTable(std::vector<GDT_GfxCardInfo>& table) = 0;
 
     /// returns true if previous compilation succeeded for the certain device. false otherwise
     virtual bool CompileOK(std::string& device) = 0;
 
-	/// Set callback function for diagnostic output.
-	/// \param[in] callback A pointer to callback function. Use nullptr to avoid output generation.
-	void SetLog(LoggingCallBackFuncP callback)
-	{
-		m_LogCallback = callback;
-	}
+    /// Set callback function for diagnostic output.
+    /// \param[in] callback A pointer to callback function. Use nullptr to avoid output generation.
+    void SetLog(LoggingCallBackFuncP callback)
+    {
+        m_LogCallback = callback;
+    }
 
 protected:
     /// Ctor
@@ -115,7 +108,7 @@ protected:
     virtual void UsePlatformNativeLineEndings(std::string& text);
 
     void SetDriverVersion(std::string sDriverVersion) { m_DriverVersion = sDriverVersion; };
-    std::string GetDriverVersion() { return m_DriverVersion; };
+    std::string GetDriverVersion() const { return m_DriverVersion; };
     /// check if the device should be in public verion or not
     bool IsPublishedDevice(const std::string& sDevice);
     /// just make number 4 digit long by multiply with 0
@@ -123,10 +116,7 @@ protected:
 
     friend class Backend;
 
-private:
-
     std::string m_DriverVersion;
-
 
 };
 

@@ -1,11 +1,21 @@
-//==============================================================================
-// Copyright 2012-2016 (c), Advanced Micro Devices, Inc. All rights reserved.
-//
-/// \author AMD Developer Tools Team
-/// \file 
-/// \brief Backdoor GSA compile extension include file.
-//==============================================================================
-
+/*
+***************************************************************************************************
+*
+*  Trade secret of Advanced Micro Devices, Inc.
+*  Copyright (c) 2012 Advanced Micro Devices, Inc. (unpublished)
+*
+*  All rights reserved.  This notice is intended as a precaution against inadvertent publication and
+*  does not imply publication or any waiver of confidentiality.  The year included in the foregoing
+*  notice is the year of creation of the work.
+*
+***************************************************************************************************
+*/
+/**
+***************************************************************************************************
+* @file  AmdDxGsaCompile.h
+* @brief Backdoor GSA compile extension include file.
+***************************************************************************************************
+*/
 #ifndef _AMDDXGSACOMPILE_H_
 #define _AMDDXGSACOMPILE_H_
 

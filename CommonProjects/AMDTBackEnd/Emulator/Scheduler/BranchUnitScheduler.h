@@ -1,11 +1,3 @@
-//=====================================================================
-// Copyright 2016 (c), Advanced Micro Devices, Inc. All rights reserved.
-//
-/// \author AMD Developer Tools Team
-/// \file BranchUnitScheduler.h 
-/// 
-//=====================================================================
-
 /// -----------------------------------------------------------------------------------------------
 /// \class Name:
 /// \brief Description:  Branch Unit Scheduler Class.

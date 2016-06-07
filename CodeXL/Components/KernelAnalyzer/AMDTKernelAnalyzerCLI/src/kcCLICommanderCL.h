@@ -1,10 +1,3 @@
-//=====================================================================
-// Copyright 2016 (c), Advanced Micro Devices, Inc. All rights reserved.
-//
-/// \author AMD Developer Tools Team
-/// \file kcCLICommanderCL.h 
-/// 
-//=====================================================================
 #ifndef _kcCLICommanderCL_H_
 #define _kcCLICommanderCL_H_
 
@@ -18,7 +11,7 @@
 
 using namespace std;
 
-/// This is the Commander interface 
+/// This is the Commander interface
 class kcCLICommanderCL: kcCLICommander
 {
 public:
@@ -32,7 +25,7 @@ public:
     /// list the driver version
     void Version(Config& config, LoggingCallBackFunc_t callback);
 
-/// Output multiple commands for all commands that requires compilation: GetBinary, GetIL, GetISA, GetAnlysis, GetMetadata, GetDebugIL,ListKernels
+    /// Output multiple commands for all commands that requires compilation: GetBinary, GetIL, GetISA, GetAnlysis, GetMetadata, GetDebugIL,ListKernels
     void RunCompileCommands(const Config& config, LoggingCallBackFunc_t callback);
 
 
@@ -64,7 +57,7 @@ private: //members
 
     // Holds the name of the kernels to be built.
     std::vector<std::string> m_requiredKernels;
-    
+
     // True if the "--kernel all" option was specified by the user.
     bool m_isAllKernels;
 

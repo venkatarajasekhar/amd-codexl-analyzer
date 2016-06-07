@@ -1,15 +1,15 @@
 //=====================================================================
-// Copyright 2011-2016 (c), Advanced Micro Devices, Inc. All rights reserved.
+// Copyright 2011, 2012 Advanced Micro Devices, Inc. All rights reserved.
 //
 /// \author GPU Developer Tools
 /// \version $Revision: #2 $
 /// \brief  The entry point for the KernelAnalyzer backend.
 //
 //=====================================================================
-// $Id: //devtools/branch/OpenSourceExp/CommonProjects/AMDTBackEnd/src/beBackend.cpp#2 $
-// Last checkin:   $DateTime: 2016/01/05 12:05:29 $
-// Last edited by: $Author:  AMD Developer Tools Team
-// Change list:    $Change: 554012 $
+// $Id: //devtools/main/CodeXL/Components/ShaderAnalyzer/AMDTBackEnd/src/beBackend.cpp#2 $
+// Last checkin:   $DateTime: 2016/04/18 06:02:03 $
+// Last edited by: $Author: salgrana $
+// Change list:    $Change: 569613 $
 //=====================================================================
 
 #include <locale>
@@ -39,7 +39,6 @@
 #include <Include/beBackend.h>
 #include <Include/beProgramBuilderOpenCL.h>
 #include <Include/beStringConstants.h>
-#include <Include/beProgramBuilderGL.h>
 #ifdef _WIN32
     #include <include/beProgramBuilderDX.h>
 #endif
@@ -57,7 +56,7 @@
 
 std::vector<std::string> Backend::m_customDxLoadPaths;
 
-Backend::Backend()
+Backend::Backend() : m_supportedPublicDevices()
 {
     m_beOpenCL = NULL;
 #ifdef _WIN32
@@ -83,108 +82,93 @@ beKA::beStatus Backend::Initialize(BuiltProgramKind ProgramKind, LoggingCallBack
         s_isDriverVersionExtracted = GetDriverVersionInfo(s_driverVersion) && !s_driverVersion.empty();
     }
 
-    if (ProgramKind == BuiltProgramKind_OpenCL)
+
+    if (m_beOpenCL == NULL)
     {
-        if (m_beOpenCL == NULL)
-        {
-            m_beOpenCL = new beProgramBuilderOpenCL();
-        }
-
-        if (m_beOpenCL != NULL)
-        {
-            m_beOpenCL->SetLog(callback);
-
-            // Extract the driver version.
-            if (s_isDriverVersionExtracted)
-            {
-                m_beOpenCL->SetDriverVersion(s_driverVersion);
-            }
-
-            retVal = m_beOpenCL->Initialize();
-        }
-    }
-    else if (ProgramKind == BuiltProgramKind_OpenGL)
-    {
-        if (m_beOpenGL == NULL)
-        {
-            m_beOpenGL = new beProgramBuilderGL();
-        }
-
-        if (m_beOpenGL != NULL)
-        {
-            m_beOpenGL->SetLog(callback);
-
-            // Extract the driver version.
-            if (s_isDriverVersionExtracted)
-            {
-                m_beOpenGL->SetDriverVersion(s_driverVersion);
-            }
-
-            retVal = m_beOpenGL->Initialize();
-        }
-
-
+        m_beOpenCL = new beProgramBuilderOpenCL();
     }
 
-#ifdef _WIN32
-
-    // Initialize the DX backend.
-    // Release the old DX driver since we can initialize each run with a different dx dll.
-    if (m_beDX != NULL)
+    if (m_beOpenCL != NULL)
     {
-        delete m_beDX;
-        m_beDX = NULL;
-    }
-
-    if (m_beDX == NULL)
-    {
-        m_beDX = new beProgramBuilderDX();
-
-        for (const std::string& dir : m_customDxLoadPaths)
-        {
-            m_beDX->AddDxSearchDir(dir);
-        }
-    }
-
-    if (m_beDX != NULL)
-    {
-        // Set the name of the module to be loaded.
-        std::string moduleToLoad;
-
-        if (sDllModule.empty())
-        {
-            // This solves the VS extension issue where devenv.exe looked for the D3D compiler
-            // at its own directory, instead of looking for it at CodeXL's binaries directory.
-            osFilePath defaultCompilerFilePath;
-
-            // Get CodeXL's binaries directory. Both the 32 and 64-bit versions of d3dcompiler are bundled with CodeXL.
-            // We use the 32-bit version by default
-            bool isOk = osGetCurrentApplicationDllsPath(defaultCompilerFilePath, OS_I386_ARCHITECTURE);
-
-            if (isOk)
-            {
-                // Create the full path to the default D3D compiler.
-                defaultCompilerFilePath.setFileName(SA_BE_STR_HLSL_optionsDefaultCompilerFileName);
-                defaultCompilerFilePath.setFileExtension(SA_BE_STR_HLSL_optionsDefaultCompilerFileExtension);
-                moduleToLoad = defaultCompilerFilePath.asString().asASCIICharArray();
-            }
-        }
-        else
-        {
-            // Use the given name.
-            moduleToLoad = sDllModule;
-        }
-
-        // Initialize the DX backend.
-        m_beDX->SetLog(callback);
+        m_beOpenCL->SetLog(callback);
 
         // Extract the driver version.
         if (s_isDriverVersionExtracted)
         {
-            m_beDX->SetDriverVersion(s_driverVersion);
+            m_beOpenCL->SetDriverVersion(s_driverVersion);
         }
 
-        retVal = m_beDX->Initialize(moduleToLoad);
+        retVal = m_beOpenCL->Initialize();
+
+        if (m_supportedPublicDevices.empty() && retVal == beStatus_SUCCESS)
+        {
+            m_beOpenCL->GetSupportedPublicDevices(m_supportedPublicDevices);
+        }
+    }
+
+#ifdef _WIN32
+
+    if (ProgramKind == BuiltProgramKind_DX)
+    {
+        // Initialize the DX backend.
+        // Release the old DX driver since we can initialize each run with a different dx dll.
+        if (m_beDX != NULL)
+        {
+            delete m_beDX;
+            m_beDX = NULL;
+        }
+
+        if (m_beDX == NULL)
+        {
+            m_beDX = new beProgramBuilderDX();
+            m_beDX->SetPublicDeviceNames(m_supportedPublicDevices);
+
+            for (const std::string& dir : m_customDxLoadPaths)
+            {
+                m_beDX->AddDxSearchDir(dir);
+            }
+        }
+
+        if (m_beDX != NULL)
+        {
+            // Set the name of the module to be loaded.
+            std::string moduleToLoad;
+
+            if (sDllModule.empty())
+            {
+                // This solves the VS extension issue where devenv.exe looked for the D3D compiler
+                // at its own directory, instead of looking for it at CodeXL's binaries directory.
+                osFilePath defaultCompilerFilePath;
+
+                // Get CodeXL's binaries directory. Both the 32 and 64-bit versions of d3dcompiler are bundled with CodeXL.
+                // We use the 32-bit version by default
+                bool isOk = osGetCurrentApplicationDllsPath(defaultCompilerFilePath, OS_I386_ARCHITECTURE);
+
+                if (isOk)
+                {
+                    // Create the full path to the default D3D compiler.
+                    defaultCompilerFilePath.setFileName(SA_BE_STR_HLSL_optionsDefaultCompilerFileName);
+                    defaultCompilerFilePath.setFileExtension(SA_BE_STR_HLSL_optionsDefaultCompilerFileExtension);
+                    moduleToLoad = defaultCompilerFilePath.asString().asASCIICharArray();
+                }
+            }
+            else
+            {
+                // Use the given name.
+                moduleToLoad = sDllModule;
+            }
+
+            // Initialize the DX backend.
+            m_beDX->SetLog(callback);
+
+            // Extract the driver version.
+            if (s_isDriverVersionExtracted)
+            {
+                m_beDX->SetDriverVersion(s_driverVersion);
+            }
+
+            retVal = m_beDX->Initialize(moduleToLoad);
+        }
     }
 
 #endif
@@ -266,7 +250,7 @@ beStatus Backend::GetDeviceInfoMarketingName(const std::string& deviceName, std:
 beStatus Backend::GetDeviceChipFamilyRevision(
     const GDT_GfxCardInfo& tableEntry,
     unsigned int&          chipFamily,
-    unsigned int&          chipRevision) 
+    unsigned int&          chipRevision)
 {
     beStatus retVal = beStatus_SUCCESS;
     chipFamily = (unsigned int) - 1;
@@ -350,9 +334,15 @@ beStatus Backend::GetDeviceChipFamilyRevision(
             chipRevision = VI_TONGA_P_A0;
             break;
 
+        case GDT_CARRIZO_EMB:
         case GDT_CARRIZO:
             chipFamily = FAMILY_VI;
             chipRevision = CARRIZO_A0;
+            break;
+
+        case GDT_STONEY:
+            chipFamily = FAMILY_VI;
+            chipRevision = STONEY_A0;
             break;
 
         case GDT_FIJI:
@@ -439,5 +429,35 @@ bool Backend::IsSuccessfulBuildForDevice(const std::string& device)
 void Backend::ClearSuccessfulBuildDevicesList()
 {
     m_successfulBuildDevices.clear();
+}
+
+bool Backend::GetSupportedPublicDevices(std::set<std::string>& devices)
+{
+    bool ret = false;
+
+    if (!m_supportedPublicDevices.empty())
+    {
+        ret = true;
+        devices = m_supportedPublicDevices;
+    }
+    else
+    {
+        // Get the supported public devices from the OpenCL backend.
+        if (m_beOpenCL == nullptr)
+        {
+            m_beOpenCL = new beProgramBuilderOpenCL;
+        }
+
+        beKA::beStatus rc = m_beOpenCL->Initialize();
+
+        if (rc == beStatus_SUCCESS)
+        {
+            // Retrieve the supported public devices from the OpenCL runtime.
+            m_beOpenCL->GetSupportedPublicDevices(devices);
+            ret = true;
+        }
+    }
+
+    return ret;
 }
 

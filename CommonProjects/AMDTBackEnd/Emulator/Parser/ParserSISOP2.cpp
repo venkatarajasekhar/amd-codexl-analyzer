@@ -1,6 +1,6 @@
 //=============================================================
-/// Copyright 2013-2016 (c), Advanced Micro Devices, Inc.
-///
+// Copyright (c) 2013 Advanced Micro Devices, Inc.
+//
 /// \file   ParserSISOP2.cpp
 /// \author GPU Developer Tools
 /// \version $Revision: #7 $
@@ -9,7 +9,7 @@
 //=============================================================
 // $Id: //devtools/main/CodeXL/Components/KernelAnalyzer/AMDTKernelAnalyzer/src/Emulator/Parser/ParserSISOP2.cpp#7 $
 // Last checkin:   $DateTime: 2015/05/10 04:38:55 $
-// Last edited by: $Author:  AMD Developer Tools Team
+// Last edited by: $Author: abenmos $
 // Change list:    $Change: 526865 $
 //=============================================================
 

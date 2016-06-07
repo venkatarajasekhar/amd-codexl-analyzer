@@ -1,13 +1,20 @@
 //=====================================================================
-// Copyright 2012-2016 (c), Advanced Micro Devices, Inc. All rights reserved.
+// Copyright 2012 Advanced Micro Devices, Inc. All rights reserved.
 //
-/// \author AMD Developer Tools Team
-/// \file kcConfig.cpp 
+/// \author GPU Developer Tools
+/// \file $File: //devtools/main/CodeXL/Components/ShaderAnalyzer/AMDTKernelAnalyzerCLI/src/kcConfig.cpp $
+/// \version $Revision: #2 $
 /// \brief  Config options to the KernelAnalyzer backend.
-/// 
+//
 //=====================================================================
+// $Id: //devtools/main/CodeXL/Components/ShaderAnalyzer/AMDTKernelAnalyzerCLI/src/kcConfig.cpp#2 $
+// Last checkin:   $DateTime: 2016/04/18 06:02:03 $
+// Last edited by: $Author: salgrana $
+// Change list:    $Change: 569613 $
+//=====================================================================
+
 #if GSA_BUILD
-#include <sstream>
+    #include <sstream>
 #endif
 
 #include <AMDTKernelAnalyzerCLI/src/kcConfig.h>
@@ -29,7 +36,7 @@ Config::Config() :
     m_AnalysisFile(),
     m_ILFile(),
     m_ISAFile(),
-	m_LiveRegisterAnalysisFile(),
+    m_LiveRegisterAnalysisFile(),
     m_BinaryOutputFile(),
     m_Function(),
     m_CSVSeparator(),
@@ -58,7 +65,8 @@ Config::dump(ostream& out) const
     out << "m_AnalysisFile:         " << m_AnalysisFile << endl;
     out << "m_ILFile:               " << m_ILFile << endl;
     out << "m_ISAFile:              " << m_ISAFile << endl;
-	out << "m_registerLivenessFile: " << m_LiveRegisterAnalysisFile << endl;
+    out << "m_registerLivenessFile: " << m_LiveRegisterAnalysisFile << endl;
+    out << "m_controlFlowGraphFile: " << m_ControlFlowGraphFile << endl;
     out << "m_BinaryOutputFile:     " << m_BinaryOutputFile << endl;
     out << "m_Function:             " << m_Function << endl;
     out << "m_CSVSeparator:         " << m_CSVSeparator << endl;
@@ -69,7 +77,7 @@ Config::dump(ostream& out) const
     out << "m_bVerbose:              " << m_bVerbose << endl;
     out << "m_FXC:                  " << m_FXC << endl;
     out << "m_DumpMSIntermediate:   " << m_DumpMSIntermediate << endl;
-    
+
     out << "m_ASICs:               ";
 
     for (vector<string>::const_iterator it = m_ASICs.begin(); it < m_ASICs.end(); ++it)
@@ -106,6 +114,7 @@ Config::dump(ostream& out) const
     }
 
     out << "m_IncludePath:             ";
+
     for (vector<string>::const_iterator it = m_IncludePath.begin(); it < m_IncludePath.end(); ++it)
     {
         out << " " << *it;

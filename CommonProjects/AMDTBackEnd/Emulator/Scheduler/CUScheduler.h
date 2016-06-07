@@ -1,10 +1,6 @@
-//=====================================================================
-// Copyright 2013-2016 (c), Advanced Micro Devices, Inc. All rights reserved.
-//
-/// \author AMD Developer Tools Team
-/// \file CUScheduler.h
-/// 
-//=====================================================================
+//=============================================================
+// Copyright (c) 2013 Advanced Micro Devices, Inc.
+//=============================================================
 
 #ifndef __CUSCHEDULER_H
 #define __CUSCHEDULER_H

@@ -1,10 +1,3 @@
-//=====================================================================
-// Copyright 2012-2016 (c), Advanced Micro Devices, Inc. All rights reserved.
-//
-/// \author AMD Developer Tools Team
-/// \file 
-/// 
-//=====================================================================
 /*****************************************************************************\
 *
 *  Module Name    vi_id.h
@@ -12,6 +5,14 @@
 *  Devices        VOLCANIC ISLANDS
 *
 *  Description    Defining Device IDs, ASIC revision IDs for VOLCANIC ISLANDS
+*
+*
+*  (c) 2012 Advanced Micro Devices, Inc. (unpublished)
+*
+*  All rights reserved.  This notice is intended as a precaution against
+*  inadvertent publication and does not imply publication or any waiver
+*  of confidentiality.  The year included in the foregoing notice is the
+*  year of creation of the work.
 *
 \*****************************************************************************/
 

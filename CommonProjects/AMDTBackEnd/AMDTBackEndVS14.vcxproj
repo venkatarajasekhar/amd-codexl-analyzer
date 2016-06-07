@@ -97,7 +97,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;./Include/GL;./Include/Common;$(CommonDir)\Src\ShaderUtils;$(CommonDir)\Src\ShaderUtils\DX10;$(CommonDir)\Src\ShaderUtils\DX11;$(CommonDir)\DX10ASM;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;./Include/GL;./Include/Common;$(CommonDir)\Src\ShaderUtils;$(CommonDir)\Src\ShaderUtils\DX10;$(CommonDir)\Src\ShaderUtils\DX11;$(CommonDir)\Src\ACLModuleManager;$(CommonDir)\DX10ASM;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalOptions> /MP %(AdditionalOptions)</AdditionalOptions>
@@ -244,14 +244,6 @@
     <ClInclude Include="Emulator\Scheduler\WorkGroup.h">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="ExternGL\AtiElfR600.h" />
-    <ClInclude Include="ExternGL\AtiElfR800.h" />
-    <ClInclude Include="ExternGL\AtiElfSI.h" />
-    <ClInclude Include="ExternGL\elf.h" />
-    <ClInclude Include="ExternGL\elf_amdtypes.h" />
-    <ClInclude Include="ExternGL\elf_decoder.h" />
-    <ClInclude Include="ExternGL\elf_dumper.h" />
-    <ClInclude Include="ExternGL\scl_types.h" />
     <ClInclude Include="Include\beAMDTBackEndDllBuild.h" />
     <ClInclude Include="Include\beBackend.h" />
     <ClInclude Include="Include\beD3DIncludeManager.h" />
@@ -260,7 +252,6 @@
     <ClInclude Include="Include\beInclude.h" />
     <ClInclude Include="Include\beProgramBuilder.h" />
     <ClInclude Include="Include\beProgramBuilderDX.h" />
-    <ClInclude Include="Include\beProgramBuilderGL.h" />
     <ClInclude Include="Include\beProgramBuilderOpenCL.h" />
     <ClInclude Include="Include\beProgramBuilderOpenGL.h" />
     <ClInclude Include="Include\beProgramBuilderVulkan.h" />
@@ -287,6 +278,7 @@
     <ClCompile Include="$(CommonDir)\Src\ShaderUtils\DX10\DXBCChecksum.cpp" />
     <ClCompile Include="$(CommonDir)\Src\ShaderUtils\DX10\IBlob.cpp" />
     <ClCompile Include="$(CommonDir)\Src\ShaderUtils\StringUtils.cpp" />
+    <ClCompile Include="..\..\Common\Src\ACLModuleManager\ACLModuleManager.cpp" />
     <ClCompile Include="..\..\Common\Src\DynamicLibraryModule\OpenGLModule.cpp">
     </ClCompile>
     <ClCompile Include="Emulator\Parser\Instruction.cpp">
@@ -320,14 +312,11 @@
     <ClCompile Include="Emulator\Scheduler\WorkGroup.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="ExternGL\elf_decoder.cpp" />
-    <ClCompile Include="ExternGL\elf_dumper.cpp" />
     <ClCompile Include="src\beBackend.cpp" />
     <ClCompile Include="src\beD3DIncludeManager.cpp" />
     <ClCompile Include="src\beDriverUtils.cpp" />
     <ClCompile Include="src\beProgramBuilder.cpp" />
     <ClCompile Include="src\beProgramBuilderDX.cpp" />
-    <ClCompile Include="src\beProgramBuilderGL.cpp" />
     <ClCompile Include="src\beProgramBuilderOpenCL.cpp" />
     <ClCompile Include="src\beProgramBuilderOpenGL.cpp" />
     <ClCompile Include="src\beProgramBuilderVulkan.cpp" />

@@ -1,11 +1,3 @@
-//=====================================================================
-// Copyright 2016 (c), Advanced Micro Devices, Inc. All rights reserved.
-//
-/// \author AMD Developer Tools Team
-/// \file kcCLICommanderCL.cpp 
-/// 
-//=====================================================================
-
 // C++.
 #include <vector>
 #include <map>
@@ -30,7 +22,7 @@
 #include <AMDTKernelAnalyzerCLI/src/kcFiles.h>
 #include <AMDTKernelAnalyzerCLI/src/kcUtils.h>
 
-// Analyzer.
+// Analyzer
 #include <VersionInfo/VersionInfo.h>
 
 // Backend.
@@ -46,56 +38,63 @@ kcCLICommanderCL::~kcCLICommanderCL()
     // No need to call DeleteInstance. The base class singleton performs this.
 }
 
-// Obsolete: this routine is being used in the generation of the statistics CSV file. 
+// Obsolete: this routine is being used in the generation of the statistics CSV file.
 // It should be removed after this mechanism is refactored.
 template<class T> std::string doNAFormat(T ui, T sentinal, T err, char listSeparator, bool shouldAddSeparator /*= true*/)
 {
-	stringstream s;
-	if (ui == sentinal)
-	{
-		s << "n/a";
-		if (shouldAddSeparator)
-		{
-			s << listSeparator;
-		}
-	}
-	else if (ui == err)
-	{
-		s << "err";
-		if (shouldAddSeparator)
-		{
-			s << listSeparator;
-		}
-	}
-	else
-	{
-		s << ui;
-		if (shouldAddSeparator)
-		{
-			s << listSeparator;
-		}
-	}
-	return s.str();
+    stringstream s;
+
+    if (ui == sentinal)
+    {
+        s << "n/a";
+
+        if (shouldAddSeparator)
+        {
+            s << listSeparator;
+        }
+    }
+    else if (ui == err)
+    {
+        s << "err";
+
+        if (shouldAddSeparator)
+        {
+            s << listSeparator;
+        }
+    }
+    else
+    {
+        s << ui;
+
+        if (shouldAddSeparator)
+        {
+            s << listSeparator;
+        }
+    }
+
+    return s.str();
 }
 
 template<class T>
 static string
 doNAFormat(T ui, T sentinal, T err, char listSeparator)
 {
-	stringstream s;
-	if (ui == sentinal)
-	{
-		s << "n/a" << listSeparator;
-	}
-	else if (ui == err)
-	{
-		s << "err" << listSeparator;
-	}
-	else
-	{
-		s << ui << listSeparator;
-	}
-	return s.str();
+    stringstream s;
+
+    if (ui == sentinal)
+    {
+        s << "n/a" << listSeparator;
+    }
+    else if (ui == err)
+    {
+        s << "err" << listSeparator;
+    }
+    else
+    {
+        s << ui << listSeparator;
+    }
+
+    return s.str();
 }
 
 
@@ -121,6 +120,7 @@ bool kcCLICommanderCL::Init(const Config& config, LoggingCallBackFunc_t callback
         {
             beKA::beStatus beRetInner = be->theOpenCLBuilder()->GetDeviceTable(m_table);
             ret = (beRetInner == beKA::beStatus_SUCCESS);
+
             if (ret)
             {
                 for (vector<GDT_GfxCardInfo>::const_iterator it = m_table.begin(); it != m_table.end(); ++it)
@@ -167,15 +167,24 @@ bool kcCLICommanderCL::Compile(const Config& config)
 
             int numOfSuccessFulBuilds = 0;
             beKA::beStatus beRet;
+
             if (config.m_IncludePath.size() > 0)
+            {
                 beRet = be->theOpenCLBuilder()->Compile(sSource, options, config.m_InputFile, &config.m_IncludePath, numOfSuccessFulBuilds);
+            }
             else
+            {
                 beRet = be->theOpenCLBuilder()->Compile(sSource, options, config.m_InputFile, NULL, numOfSuccessFulBuilds);
+            }
 
             if (beRet == beKA::beStatus_SUCCESS)
+            {
                 bRet = true;
+            }
             else
+            {
                 bRet = false;
+            }
         }
     }
 
@@ -185,6 +194,7 @@ bool kcCLICommanderCL::Compile(const Config& config)
 void kcCLICommanderCL::Version(Config& config, LoggingCallBackFunc_t callback)
 {
     std::stringstream s_Log;
+
     if (Init(config, callback))
     {
         std::wstring versionString = STRPRODUCTVER;
@@ -198,6 +208,7 @@ void kcCLICommanderCL::Version(Config& config, LoggingCallBackFunc_t callback)
         s_Log << STR_DRIVER_VERSION;
         std::string driverVersion;
         bool isOk = be->GetDriverVersionInfo(driverVersion);
+
         if (isOk)
         {
             s_Log << driverVersion << std::endl;
@@ -255,6 +266,7 @@ bool kcCLICommanderCL::InitRequestedAsicList(const Config& config)
                 idStringStream >> hex >> id;
 
                 GDT_GfxCardInfo info;
+
                 // TODO: should look up by device id/ rev id pair
                 if (be->GetDeviceInfo(id, info) == beStatus_SUCCESS)
                 {
@@ -267,13 +279,16 @@ bool kcCLICommanderCL::InitRequestedAsicList(const Config& config)
             // There are duplicate marketing names with different ASICs.
             // I think the right thing to do is add all of the possible ASICs.
             vector<GDT_GfxCardInfo> cardInfo;
+
             if (be->GetDeviceInfoMarketingName(*asicIter, cardInfo) == beStatus_SUCCESS)
             {
                 toBeErased.insert(*asicIter);
+
                 for (vector<GDT_GfxCardInfo>::const_iterator infoIter = cardInfo.begin(); infoIter != cardInfo.end(); ++infoIter)
                 {
                     toBeAdded.insert(infoIter->m_szCALName);
                 }
+
                 continue;
             }
         }
@@ -301,19 +316,23 @@ bool kcCLICommanderCL::InitRequestedAsicList(const Config& config)
             }
         }
     }
+
     return bRet;
 }
 
 void kcCLICommanderCL::ListAsics(Config& config, LoggingCallBackFunc_t callback)
 {
     if (!Init(config, callback))
+    {
         return;
+    }
 
-    if (! config.m_bVerbose)
+    if (!config.m_bVerbose)
     {
         std::stringstream ss;
         ss << "Devices:" << endl;
         LogCallBack(ss.str());
+
         for (set<string>::const_iterator devIter = m_externalDevices.begin(); devIter != m_externalDevices.end(); ++devIter)
         {
             std::stringstream sss;
@@ -335,6 +354,7 @@ void kcCLICommanderCL::ListAsics(Config& config, LoggingCallBackFunc_t callback)
         // emit the table.
         GDT_HW_GENERATION gen = GDT_HW_GENERATION_NONE;
         string calName;
+
         for (vector<GDT_GfxCardInfo>::const_iterator it = m_table.begin(); it != m_table.end(); ++it)
         {
             if (gen != it->m_generation)
@@ -345,33 +365,39 @@ void kcCLICommanderCL::ListAsics(Config& config, LoggingCallBackFunc_t callback)
 
                 switch (gen)
                 {
-                case GDT_HW_GENERATION_SOUTHERNISLAND:
-                    s_Log << sHwGenDisplayName << KA_STR_familyNameSICards ":" << endl;
-                    break;
-                case GDT_HW_GENERATION_SEAISLAND:
-                    s_Log << sHwGenDisplayName << KA_STR_familyNameCICards ":" << endl;
-                    break;
-                case GDT_HW_GENERATION_VOLCANICISLAND:
-                    s_Log << sHwGenDisplayName << KA_STR_familyNameVICards ":" << endl;
-                    break;
-                default:
-                    // You must have a new hardware generation.
-                    // Add code...
-                    GT_ASSERT_EX(false, L"Unknown hardware generation.");
-                    break;
+                    case GDT_HW_GENERATION_SOUTHERNISLAND:
+                        s_Log << sHwGenDisplayName << KA_STR_familyNameSICards ":" << endl;
+                        break;
+
+                    case GDT_HW_GENERATION_SEAISLAND:
+                        s_Log << sHwGenDisplayName << KA_STR_familyNameCICards ":" << endl;
+                        break;
+
+                    case GDT_HW_GENERATION_VOLCANICISLAND:
+                        s_Log << sHwGenDisplayName << KA_STR_familyNameVICards ":" << endl;
+                        break;
+
+                    default:
+                        // You must have a new hardware generation.
+                        // Add code...
+                        GT_ASSERT_EX(false, L"Unknown hardware generation.");
+                        break;
                 }
             }
+
             if (calName != string(it->m_szCALName))
             {
                 calName = string(it->m_szCALName);
                 s_Log << "    " << calName << endl;
             }
+
             ostringstream ss;
             ss << hex << it->m_deviceID;
             s_Log << "            " << ss.str() << "       " << string(it->m_szMarketingName) << endl;
         }
 
         bool foundNewAsic = false;
+
         for (set<string>::const_iterator devIter = m_externalDevices.begin(); devIter != m_externalDevices.end(); ++devIter)
         {
             if (be->GetDeviceInfo(*devIter, NULL) == beStatus_SUCCESS)
@@ -383,6 +409,7 @@ void kcCLICommanderCL::ListAsics(Config& config, LoggingCallBackFunc_t callback)
             // Skip CPU devices here.
             // We do them below.
             cl_device_type deviceType;
+
             if (be->theOpenCLBuilder()->GetDeviceType(*devIter, deviceType) == beStatus_SUCCESS &&
                 deviceType == CL_DEVICE_TYPE_CPU)
             {
@@ -393,17 +420,20 @@ void kcCLICommanderCL::ListAsics(Config& config, LoggingCallBackFunc_t callback)
             {
                 foundNewAsic = true;
                 s_Log << "New ASICs:" << endl
-                    << "(This happens when your Catalyst drivers are newer than this tool." << endl
-                    << " Please check for updates to AMD APP KernelAnalyzer2." << endl;
+                      << "(This happens when your AMD Radeon Software drivers are newer than this tool." << endl
+                      << " Please check for updates to AMD APP KernelAnalyzer2." << endl;
             }
+
             s_Log << "   " << *devIter << endl;
         }
 
         // Print out the CPU device
         bool foundCPU = false;
+
         for (set<string>::const_iterator devIter = m_externalDevices.begin(); devIter != m_externalDevices.end(); ++devIter)
         {
             cl_device_type deviceType;
+
             if (be->theOpenCLBuilder()->GetDeviceType(*devIter, deviceType) == beStatus_SUCCESS &&
                 deviceType != CL_DEVICE_TYPE_CPU)
             {
@@ -455,7 +485,9 @@ void kcCLICommanderCL::RunCompileCommands(const Config& config, LoggingCallBackF
 void kcCLICommanderCL::Analysis(const Config& config)
 {
     if (config.m_AnalysisFile.size() == 0)
+    {
         return;
+    }
 
     if (config.m_Function.size() == 0)
     {
@@ -465,38 +497,42 @@ void kcCLICommanderCL::Analysis(const Config& config)
     }
 
     if ((config.m_SuppressSection.size() > 0) && (config.m_BinaryOutputFile.size() == 0))
+    {
         LogCallBack("Warning: --suppress option is valid only with output binary\n");
+    }
 
     // Get the separator for CSV list items.
-	char csvSeparator = kcUtils::GetCsvSeparator(config);
+    char csvSeparator = kcUtils::GetCsvSeparator(config);
 
     // Get analysis for devices.
-    for (set<string>::const_iterator devIter = m_asics.begin(); devIter != m_asics.end(); ++devIter)
+    for (const std::string& deviceName : m_asics)
     {
-        for (std::vector<std::string>::iterator kernelIter = m_requiredKernels.begin(); kernelIter != m_requiredKernels.end(); ++kernelIter)
+        for (const std::string& kernelName : m_requiredKernels)
         {
             // Show the analysis only for external devices.
-            if (m_externalDevices.find(*devIter) == m_externalDevices.end())
+            if (m_externalDevices.find(deviceName) == m_externalDevices.end())
             {
                 continue;
             }
+
             beStatus status;
 
             // Only do GPU devices.
             cl_device_type deviceType;
-            status = be->theOpenCLBuilder()->GetDeviceType(*devIter, deviceType);
+            status = be->theOpenCLBuilder()->GetDeviceType(deviceName, deviceType);
+
             if (status != beStatus_SUCCESS ||
                 deviceType != CL_DEVICE_TYPE_GPU)
             {
                 std::stringstream s_Log;
-                s_Log << "Info: Skipping analysis of CPU device '" << *devIter << "'." << endl;
+                s_Log << "Info: Skipping analysis of CPU device '" << deviceName << "'." << endl;
                 LogCallBack(s_Log.str());
                 continue;
             }
 
             AnalysisData analysis;
             (void)memset(&analysis, 0, sizeof(analysis));
-            status = be->theOpenCLBuilder()->GetStatistics(*devIter, *kernelIter, analysis);
+            status = be->theOpenCLBuilder()->GetStatistics(deviceName, kernelName, analysis);
 
             if (status != beStatus_SUCCESS)
             {
@@ -506,33 +542,31 @@ void kcCLICommanderCL::Analysis(const Config& config)
                     s_Log << "Info: Skipping analysis, wrong kernel name provided: '" << config.m_Function << "'." << endl;
                     LogCallBack(s_Log.str());
                 }
+
                 continue;
             }
 
             // Create the output file.
             ofstream output;
-            gtString fixedAnalysisFileName;
-            fixedAnalysisFileName << config.m_AnalysisFile.c_str();
+            gtString statsOutputFileName;
+            kcUtils::ConstructOutputFileName(config.m_AnalysisFile, KC_STR_DEFAULT_STATISTICS_SUFFIX, kernelName, deviceName, statsOutputFileName);
             osFilePath analysisOutputPath;
-            analysisOutputPath.setFullPathFromString(fixedAnalysisFileName);
+            analysisOutputPath.setFullPathFromString(statsOutputFileName);
             osDirectory targetDir;
             analysisOutputPath.getFileDirectory(targetDir);
             gtString targetDirAsStr = targetDir.directoryPath().asString(true);
-
-            if (m_isAllKernels)
-            {
-                targetDirAsStr << (*kernelIter).c_str();
-                targetDir.setDirectoryFullPathFromString(targetDirAsStr);
-            }
             analysisOutputPath.setFileDirectory(targetDirAsStr);
 
             // Create the target directory if it does not exist.
             if (!targetDir.exists())
             {
                 bool isTargetDirCreated(targetDir.create());
+
                 if (!isTargetDirCreated)
                 {
-                    LogCallBack("Unable to create target directory.\n");
+                    std::stringstream errMsg;
+                    errMsg << STR_ERR_CANNOT_FIND_OUTPUT_DIR << std::endl;
+                    LogCallBack(errMsg.str());
                 }
             }
 
@@ -547,10 +581,10 @@ void kcCLICommanderCL::Analysis(const Config& config)
             else
             {
                 // Write the headers.
-				output << kcUtils::GetStatisticsCsvHeaderString(csvSeparator) << std::endl;
+                output << kcUtils::GetStatisticsCsvHeaderString(csvSeparator) << std::endl;
 
                 // Write a line of CSV.
-                output << *devIter << csvSeparator;
+                output << deviceName << csvSeparator;
                 output << analysis.maxScratchRegsNeeded << csvSeparator;
                 output << analysis.numThreadPerGroup << csvSeparator;
                 output << doNAFormat(analysis.wavefrontSize, CAL_NA_Value_64, CAL_ERR_Value_64, csvSeparator);
@@ -563,7 +597,7 @@ void kcCLICommanderCL::Analysis(const Config& config)
                 output << doNAFormat(analysis.numThreadPerGroupX, CAL_NA_Value_64, CAL_ERR_Value_64, csvSeparator);
                 output << doNAFormat(analysis.numThreadPerGroupY, CAL_NA_Value_64, CAL_ERR_Value_64, csvSeparator);
                 output << doNAFormat(analysis.numThreadPerGroupZ, CAL_NA_Value_64, CAL_ERR_Value_64, csvSeparator);
-                output << doNAFormat(analysis.ISASize, CAL_NA_Value_64, CAL_ERR_Value_64, csvSeparator, false);
+                output << doNAFormat(analysis.ISASize, (CALuint64)0, CAL_ERR_Value_64, csvSeparator, false);
                 output << std::endl;
 
                 // Close the output file.
@@ -576,23 +610,29 @@ void kcCLICommanderCL::Analysis(const Config& config)
 void kcCLICommanderCL::ListKernels(const Config& config)
 {
     if (config.m_RequestedCommand != Config::ccListKernels)
+    {
         return;
+    }
 
     vector<string> kernels;
 
     for (set<string>::const_iterator devIter = m_asics.begin(); devIter != m_asics.end(); ++devIter)
     {
         be->theOpenCLBuilder()->GetKernels(*devIter, kernels);
+
         if (kernels.size() == 0)
         {
             continue;
         }
+
         std::stringstream s_Log;
         s_Log << *devIter << ":" << endl;
+
         for (vector<string>::const_iterator kernelIter = kernels.begin(); kernelIter != kernels.end(); ++kernelIter)
         {
             s_Log << "   " << *kernelIter << endl;
         }
+
         LogCallBack(s_Log.str());
         kernels.clear();
     }
@@ -602,54 +642,64 @@ void kcCLICommanderCL::GetILText(const Config& config)
 {
     if (!config.m_ILFile.empty())
     {
-        if (!config.m_Function.empty())
+        if (!config.m_ILFile.empty() && !config.m_Function.empty() && be != nullptr)
         {
-            if ((config.m_SuppressSection.size() > 0) && (config.m_BinaryOutputFile.size() == 0))
-            {
-                LogCallBack("Warning: --suppress option is valid only with output binary\n");
-            }
+            beProgramBuilderOpenCL* pBuilder = be->theOpenCLBuilder();
 
-            // This variable will hold the IL text.
-            std::string ilTextBuffer;
-
-            // Get IL text and make output files.
-            for (set<string>::const_iterator devIter = m_asics.begin(); devIter != m_asics.end(); ++devIter)
+            if (pBuilder != nullptr)
             {
-                bool shouldCreateDirectories = m_isAllKernels && !m_requiredKernels.empty();
-                for (std::vector<std::string>::iterator kernelIter = m_requiredKernels.begin(); kernelIter != m_requiredKernels.end(); ++kernelIter)
+                if ((config.m_SuppressSection.size() > 0) && (config.m_BinaryOutputFile.size() == 0))
                 {
-                    beKA::beStatus status = be->theOpenCLBuilder()->GetKernelILText(*devIter, *kernelIter, ilTextBuffer);
+                    // Print the warning message.
+                    std::stringstream msg;
+                    msg << STR_WRN_CL_SUPPRESS_WIHTOUT_BINARY << std::endl;
+                    LogCallBack(msg.str());
+                }
 
-                    if (status == beStatus_SUCCESS)
+                // This variable will hold the IL text.
+                std::string ilTextBuffer;
+
+                // Get IL text and make output files.
+                for (const std::string& deviceName : m_asics)
+                {
+                    for (const std::string& kernelName : m_requiredKernels)
                     {
-                        std::stringstream s_Log;
-                        KAUtils::WriteTextFile(s_Log, config.m_ILFile, "amdil", ilTextBuffer,
-                            *devIter,
-                            (shouldCreateDirectories ? *kernelIter : ""));
-                        LogCallBack(s_Log.str());
-                    }
+                        beKA::beStatus status = pBuilder->GetKernelILText(deviceName, kernelName, ilTextBuffer);
 
-                    ilTextBuffer.clear();
+                        if (status == beStatus_SUCCESS)
+                        {
+                            gtString ilOutputFileName;
+                            kcUtils::ConstructOutputFileName(config.m_ILFile,
+                                                             KC_STR_DEFAULT_AMD_IL_SUFFIX, kernelName, deviceName, ilOutputFileName);
+                            KAUtils::WriteTextFile(ilOutputFileName.asASCIICharArray(), ilTextBuffer, m_LogCallback);
+                        }
+                        else
+                        {
+                            // Inform the user.
+                            std::stringstream msg;
+                            msg << STR_ERR_CANNOT_DISASSEMBLE_AMD_IL << " for " << deviceName << "(kernel: " << kernelName << ")." << std::endl;
+                            m_LogCallback(msg.str().c_str());
+                        }
+
+                        // Clear the output buffer.
+                        ilTextBuffer.clear();
+                    }
                 }
             }
         }
-        else
-        {
-            std::stringstream s_Log;
-            s_Log << "Error: Must specify kernel name to get IL text" << endl;
-            LogCallBack(s_Log.str());
-        }
     }
-
 }
 
 void kcCLICommanderCL::GetISAText(const Config& config)
 {
     if (config.m_ISAFile.size() > 0)
     {
-        if ((config.m_SuppressSection.size() > 0) && (config.m_BinaryOutputFile.size() == 0))            
+        if ((config.m_SuppressSection.size() > 0) && (config.m_BinaryOutputFile.size() == 0))
         {
-            LogCallBack("Warning: --suppress option is valid only with output binary\n");
+            // Print the warning message.
+            std::stringstream msg;
+            msg << STR_WRN_CL_SUPPRESS_WIHTOUT_BINARY << std::endl;
+            LogCallBack(msg.str());
         }
 
         beProgramBuilderOpenCL* pClBuilder = be->theOpenCLBuilder();
@@ -658,28 +708,60 @@ void kcCLICommanderCL::GetISAText(const Config& config)
         {
             std::string sISAIL;
             bool shouldCreateSubDirectories = m_isAllKernels && !m_requiredKernels.empty();
+            GT_UNREFERENCED_PARAMETER(shouldCreateSubDirectories);
 
             // Get ISA text and make output files.
-            for (set<string>::const_iterator devIter = m_asics.begin(); devIter != m_asics.end(); ++devIter)
+            for (const std::string& deviceName : m_asics)
             {
-                for (std::vector<std::string>::iterator kernelIter = m_requiredKernels.begin(); kernelIter != m_requiredKernels.end(); ++kernelIter)
+                for (const std::string& kernelName : m_requiredKernels)
                 {
-                    beKA::beStatus status = pClBuilder->GetKernelISAText(*devIter, *kernelIter, sISAIL);
+                    beKA::beStatus status = pClBuilder->GetKernelISAText(deviceName, kernelName, sISAIL);
+
                     if (status == beStatus_SUCCESS)
                     {
-                        std::stringstream s_Log;
-                        KAUtils::WriteTextFile(s_Log, config.m_ISAFile, IsaSuffix, sISAIL, *devIter,
-                            (shouldCreateSubDirectories ? *kernelIter : ""));
+                        gtString isaOutputFileName;
+                        kcUtils::ConstructOutputFileName(config.m_ISAFile, KC_STR_DEFAULT_ISA_SUFFIX, kernelName, deviceName, isaOutputFileName);
+                        KAUtils::WriteTextFile(isaOutputFileName.asASCIICharArray(), sISAIL, m_LogCallback);
 
-						bool isRegLivenessRequired = !config.m_LiveRegisterAnalysisFile.empty();
-						if (isRegLivenessRequired)
-						{
-							// Call the kcUtils routine to analyze <generatedFileName> and write
-							// the analysis file.
-						}
+                        // Perform live register analysis.
+                        bool isRegLivenessRequired = !config.m_LiveRegisterAnalysisFile.empty();
 
-                        LogCallBack(s_Log.str());
+                        if (isRegLivenessRequired)
+                        {
+                            gtString liveRegAnalysisOutputFileName;
+                            kcUtils::ConstructOutputFileName(config.m_LiveRegisterAnalysisFile, KC_STR_DEFAULT_LIVE_REG_ANALYSIS_SUFFIX,
+                                                             kernelName, deviceName, liveRegAnalysisOutputFileName);
+
+                            // Call the kcUtils routine to analyze <generatedFileName> and write
+                            // the analysis file.
+                            kcUtils::PerformLiveRegisterAnalysis(isaOutputFileName, liveRegAnalysisOutputFileName,
+                                                                 m_LogCallback);
+                        }
+
+                        // Generate control flow graph.
+                        bool isCfgRequired = !config.m_ControlFlowGraphFile.empty();
+
+                        if (isCfgRequired)
+                        {
+                            gtString cfgOutputFileName;
+                            kcUtils::ConstructOutputFileName(config.m_ControlFlowGraphFile, KC_STR_DEFAULT_CFG_SUFFIX,
+                                                             kernelName, deviceName, cfgOutputFileName);
+
+                            // Call the kcUtils routine to analyze <generatedFileName> and write
+                            // the analysis file.
+                            kcUtils::PerformLiveRegisterAnalysis(isaOutputFileName, cfgOutputFileName,
+                                                                 m_LogCallback);
+                        }
                     }
+                    else
+                    {
+                        // Inform the user.
+                        std::stringstream msg;
+                        msg << STR_ERR_CANNOT_DISASSEMBLE_ISA << " for " << deviceName << "(kernel: " << kernelName << ")." << std::endl;
+                        m_LogCallback(msg.str().c_str());
+                    }
+
+                    // Clear the output buffer.
                     sISAIL.clear();
                 }
             }
@@ -689,81 +771,131 @@ void kcCLICommanderCL::GetISAText(const Config& config)
 
 void kcCLICommanderCL::GetBinary(const Config& config)
 {
-    if (config.m_BinaryOutputFile.size()  == 0)
-        return;
-
-    std::vector<char> binary;
-
-    // Make binary output files.
-    for (set<string>::const_iterator devIter = m_asics.begin(); devIter != m_asics.end(); ++devIter)
+    if (config.m_BinaryOutputFile.size() > 0 && be != nullptr)
     {
-        BinaryOptions binopts;
-        binopts.m_SuppressSection = config.m_SuppressSection;
-        beStatus status = be->theOpenCLBuilder()->GetBinary(*devIter, binopts, binary);
-        if (status == beStatus_SUCCESS)
+        beProgramBuilderOpenCL* pBuilder = be->theOpenCLBuilder();
+
+        if (pBuilder != nullptr)
         {
-            std::stringstream s_Log;
-            bool isPathDecorationRequired = !config.m_isRetainUserBinaryPath;
-            KAUtils::WriteBinaryFile(s_Log, config.m_BinaryOutputFile, isPathDecorationRequired, binary, *devIter);
-            LogCallBack(s_Log.str());
+            // Create binary output files.
+            BinaryOptions binopts;
+            binopts.m_SuppressSection = config.m_SuppressSection;
+
+            std::vector<char> binary;
+
+            for (const std::string& deviceName : m_asics)
+            {
+                beStatus status = pBuilder->GetBinary(deviceName, binopts, binary);
+
+                if (status == beStatus_SUCCESS)
+                {
+                    gtString binOutputFileName;
+                    kcUtils::ConstructOutputFileName(config.m_BinaryOutputFile,
+                                                     KC_STR_DEFAULT_BIN_SUFFIX, "", deviceName, binOutputFileName);
+                    KAUtils::WriteBinaryFile(binOutputFileName.asASCIICharArray(), binary, m_LogCallback);
+                }
+                else
+                {
+                    // Inform the user.
+                    std::stringstream msg;
+                    msg << STR_ERR_CANNOT_EXTRACT_BINARIES << " for " << deviceName << "." << std::endl;
+                    m_LogCallback(msg.str().c_str());
+                }
+
+                // Clear the output buffer.
+                binary.clear();
+            }
         }
-        binary.clear();
     }
 }
 
 void kcCLICommanderCL::GetMetadata(const Config& config)
 {
-    if (config.m_MetadataFile.size()  == 0)
-        return;
-
-    if ((config.m_SuppressSection.size() > 0) && (config.m_BinaryOutputFile.size() == 0))
-        LogCallBack("Warning: --suppress option is valid only with output binary\n");
-
-    bool shouldCreateSubDirectories = m_isAllKernels && !m_requiredKernels.empty();
-    std::string text;
-    // Make binary output files.
-    for (set<string>::const_iterator devIter = m_asics.begin(); devIter != m_asics.end(); ++devIter)
+    if (config.m_MetadataFile.size() > 0 && be != nullptr)
     {
-        for (std::vector<std::string>::iterator kernelIter = m_requiredKernels.begin(); kernelIter != m_requiredKernels.end(); ++kernelIter)
+        if ((config.m_SuppressSection.size() > 0) && (config.m_BinaryOutputFile.size() == 0))
         {
-            beStatus status = be->theOpenCLBuilder()->GetKernelMetaDataText(*devIter, config.m_Function, text);
-            if (status == beStatus_SUCCESS)
+            // Print the warning message.
+            std::stringstream msg;
+            msg << STR_WRN_CL_SUPPRESS_WIHTOUT_BINARY << std::endl;
+            LogCallBack(msg.str());
+        }
+
+        beProgramBuilderOpenCL* pBuilder = be->theOpenCLBuilder();
+
+        if (pBuilder != nullptr)
+        {
+            // Create the meta-data output files.
+            std::string metaDataText;
+
+            for (const std::string& deviceName : m_asics)
             {
-                std::stringstream s_Log;
-                KAUtils::WriteTextFile(s_Log, config.m_MetadataFile, MetadataSuffix, text,
-                    *devIter,
-                    (shouldCreateSubDirectories ? *kernelIter : ""));
-                LogCallBack(s_Log.str());
+                for (const std::string& kernelName : m_requiredKernels)
+                {
+                    beStatus status = pBuilder->GetKernelMetaDataText(deviceName, kernelName, metaDataText);
+
+                    if (status == beStatus_SUCCESS)
+                    {
+                        gtString metaDataOutputFileName;
+                        kcUtils::ConstructOutputFileName(config.m_MetadataFile, KC_STR_DEFAULT_METADATA_SUFFIX,
+                                                         kernelName, deviceName, metaDataOutputFileName);
+                        KAUtils::WriteTextFile(metaDataOutputFileName.asASCIICharArray(), metaDataText, m_LogCallback);
+                    }
+                    else
+                    {
+                        // Inform the user.
+                        std::stringstream msg;
+                        msg << STR_ERR_CANNOT_EXTRACT_META_DATA << " for " << deviceName << "(kernel: " << kernelName << ")." << std::endl;
+                        m_LogCallback(msg.str().c_str());
+                    }
+
+                    // Clear the output buffer.
+                    metaDataText.clear();
+                }
             }
         }
-        
     }
 }
 
 void kcCLICommanderCL::GetDebugIL(const Config& config)
 {
-    if (config.m_DebugILFile.size()  == 0)
-        return;
-
-    if ((config.m_SuppressSection.size() > 0) && (config.m_BinaryOutputFile.size() == 0))
-        LogCallBack("Warning: --suppress option is valid only with output binary\n");
-
-    bool shouldCreateSubDirectories = m_isAllKernels && !m_requiredKernels.empty();
-
-    // Make binary output files.
-    for (set<string>::const_iterator devIter = m_asics.begin(); devIter != m_asics.end(); ++devIter)
+    if (config.m_DebugILFile.size() > 0 && be != nullptr)
     {
-        for (std::vector<std::string>::iterator kernelIter = m_requiredKernels.begin(); kernelIter != m_requiredKernels.end(); ++kernelIter)
+        beProgramBuilderOpenCL* pBuilder = be->theOpenCLBuilder();
+
+        if (pBuilder != nullptr)
         {
-            std::string text;
-            beStatus status = be->theOpenCLBuilder()->GetKernelDebugILText(*devIter, config.m_Function, text);
-            if (status == beStatus_SUCCESS)
+            if ((config.m_SuppressSection.size() > 0) && (config.m_BinaryOutputFile.size() == 0))
             {
-                std::stringstream s_Log;
-                KAUtils::WriteTextFile(s_Log, config.m_DebugILFile, DebugilSuffix, text,
-                    *devIter,
-                    (shouldCreateSubDirectories ? *kernelIter : ""));
-                LogCallBack(s_Log.str());
+                // Print the warning message.
+                std::stringstream msg;
+                msg << STR_WRN_CL_SUPPRESS_WIHTOUT_BINARY << std::endl;
+                LogCallBack(msg.str());
+            }
+
+            // Create debug IL output files.
+            for (const std::string& deviceName : m_asics)
+            {
+                for (const std::string& kernelName : m_requiredKernels)
+                {
+                    std::string text;
+                    beStatus status = pBuilder->GetKernelDebugILText(deviceName, kernelName, text);
+
+                    if (status == beStatus_SUCCESS)
+                    {
+                        gtString debugIlOutputFileName;
+                        kcUtils::ConstructOutputFileName(config.m_MetadataFile, KC_STR_DEFAULT_DEBUG_IL_SUFFIX,
+                                                         kernelName, deviceName, debugIlOutputFileName);
+                        KAUtils::WriteTextFile(debugIlOutputFileName.asASCIICharArray(), text, m_LogCallback);
+                    }
+                    else
+                    {
+                        // Inform the user.
+                        std::stringstream msg;
+                        msg << STR_ERR_CANNOT_EXTRACT_DEBUG_IL << " for " << deviceName << "(kernel: " << kernelName << ")." << std::endl;
+                        m_LogCallback(msg.str().c_str());
+                    }
+                }
             }
         }
     }
@@ -772,6 +904,7 @@ void kcCLICommanderCL::GetDebugIL(const Config& config)
 void kcCLICommanderCL::InitRequiredKernels(const Config& config, const std::set<std::string>& requiredDevices, std::vector<std::string>& requiredKernels)
 {
     requiredKernels.clear();
+
     if (!requiredDevices.empty())
     {
         // We only need a single device name.
@@ -781,6 +914,7 @@ void kcCLICommanderCL::InitRequiredKernels(const Config& config, const std::set<
         std::transform(requestedKernel.begin(), requestedKernel.end(), requestedKernel.begin(), ::tolower);
         m_isAllKernels = (requestedKernel.compare("all") == 0);
         beProgramBuilderOpenCL* pClBuilder = be->theOpenCLBuilder();
+
         if (pClBuilder != NULL)
         {
             if (m_isAllKernels)

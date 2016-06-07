@@ -1,30 +1,24 @@
-//=====================================================================
-// Copyright 2008-2016 (c), Advanced Micro Devices, Inc. All rights reserved.
-//
-/// \author AMD Developer Tools Team
-/// \file 
-/// 
-//=====================================================================/*****************************************************************************\
-//*
-//*  Module Name    evergreen_id.h
-//*  Project        EVERGREEN
-//*  Devices        EVERGREEN
-//*
-//*  Description    Defining Device IDs, ASIC revision IDs for EVERGREEN
-//*
-//*
-//*  (c) 2008 Advanced Micro Devices, Inc. (unpublished)
-//*
-//*  All rights reserved.  This notice is intended as a precaution against
-//*  inadvertent publication and does not imply publication or any waiver
-//*  of confidentiality.  The year included in the foregoing notice is the
-//*  year of creation of the work.
-//*
-//*  LOG OF CHANGES
-//*
-//*  1.0    08/29/2008 - initial revision
-//*
-//\*****************************************************************************/
+/*****************************************************************************\
+*
+*  Module Name    evergreen_id.h
+*  Project        EVERGREEN
+*  Devices        EVERGREEN
+*
+*  Description    Defining Device IDs, ASIC revision IDs for EVERGREEN
+*
+*
+*  (c) 2008 Advanced Micro Devices, Inc. (unpublished)
+*
+*  All rights reserved.  This notice is intended as a precaution against
+*  inadvertent publication and does not imply publication or any waiver
+*  of confidentiality.  The year included in the foregoing notice is the
+*  year of creation of the work.
+*
+*  LOG OF CHANGES
+*
+*  1.0    08/29/2008 [FYan] - initial revision
+*
+\*****************************************************************************/
 
 #ifndef _EVERGREEN_ID_H
 #define _EVERGREEN_ID_H

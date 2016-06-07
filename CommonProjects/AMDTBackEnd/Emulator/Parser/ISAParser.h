@@ -1,9 +1,6 @@
-//=====================================================================
-// Copyright 2013-2016 (c), Advanced Micro Devices, Inc. All rights reserved.
-//
-/// \author AMD Developer Tools Team
-/// 
-//=====================================================================
+//=============================================================
+// Copyright (c) 2013 Advanced Micro Devices, Inc.
+//=============================================================
 
 #ifndef __ISAPARSER_H
 #define __ISAPARSER_H
@@ -16,6 +13,7 @@
 #include <set>
 #include "ParserSI.h"
 #include "ISAProgramGraph.h"
+#include <AMDTBackEnd/Include/beInclude.h>
 
 /// Parser for the ISA instructions
 class KA_BACKEND_DECLDIR ParserISA
@@ -50,6 +48,12 @@ public:
     /// offset - string representation of the instruction's offset within the program.
     bool SplitIsaLine(const std::string& isaSourceCodeLine, std::string& instrOpCode,
                       std::string& params, std::string& binaryRepresentation, std::string& offset) const;
+
+    /// Extracts the statistics from ISA that was produced from HSAIL-path compilation.
+    /// hsailIsa - the disassembled ISA (which was produced from HSAIL-path compilation).
+    /// stats - an output parameter to hold the extracted statistics.
+    /// \returns true for success, false otherwise.
+    static bool ParseHsailStatistics(const std::string& hsailIsa, beKA::AnalysisData& stats);
 
     /// -----------------------------------------------------------------------------------------------
     /// \brief Name:        GetInstructions
@@ -110,6 +114,13 @@ private:
     /// \return true if succeeded
     /// -----------------------------------------------------------------------------------------------
     bool ParseToVector(const std::string& isa);
+
+    /// -------------------------------------------------------------------------------------------------
+    /// \brief Name:        ExtractHsailIsaNumericValue
+    /// \brief Description: Extracts a numeric value from an ISA string that was produced from HSAIL path
+    /// -------------------------------------------------------------------------------------------------
+    static void ExtractHsailIsaNumericValue(const std::string& hsailIsa,
+                                            const std::string valueToken, CALuint64& valueBuffer);
 
     /// the ISA program graph
     ISAProgramGraph m_pIsaTree;

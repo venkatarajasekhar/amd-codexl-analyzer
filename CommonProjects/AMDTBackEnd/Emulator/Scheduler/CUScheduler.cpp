@@ -1,6 +1,6 @@
 //=============================================================
-/// Copyright 2013-2016 (c), Advanced Micro Devices, Inc.
-///
+// Copyright (c) 2013 Advanced Micro Devices, Inc.
+//
 /// \file   CUScheduler.cpp
 /// \author GPU Developer Tools
 /// \version $Revision: #2 $
@@ -9,7 +9,7 @@
 //=============================================================
 // $Id: //devtools/main/CodeXL/Components/KernelAnalyzer/AMDTKernelAnalyzer/src/Emulator/Scheduler/CUScheduler.cpp#2 $
 // Last checkin:   $DateTime: 2013/11/20 07:16:06 $
-// Last edited by: $Author:  AMD Developer Tools Team
+// Last edited by: $Author: salgrana $
 // Change list:    $Change: 482993 $
 //=============================================================
 

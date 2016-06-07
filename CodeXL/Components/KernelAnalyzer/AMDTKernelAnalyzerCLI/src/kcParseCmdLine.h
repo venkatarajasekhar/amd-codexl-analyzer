@@ -1,11 +1,18 @@
+// -*- C++ -*-
 //=====================================================================
-// Copyright 2011-2016 (c), Advanced Micro Devices, Inc. All rights reserved.
+// Copyright 2011 Advanced Micro Devices, Inc. All rights reserved.
 //
-/// \author AMD Developer Tools Team
-/// \file kcParseCmdLine.h 
+/// \author GPU Developer Tools
+/// \file $File: //devtools/main/CodeXL/Components/ShaderAnalyzer/AMDTKernelAnalyzerCLI/src/kcParseCmdLine.h $
+/// \version $Revision: #1 $
 /// \brief  This file contains the function to parse the command
 ///         line using Boost.
-/// 
+//
+//=====================================================================
+// $Id: //devtools/main/CodeXL/Components/ShaderAnalyzer/AMDTKernelAnalyzerCLI/src/kcParseCmdLine.h#1 $
+// Last checkin:   $DateTime: 2016/02/28 16:32:28 $
+// Last edited by: $Author: igal $
+// Change list:    $Change: 561710 $
 //=====================================================================
 
 // Reduced from APPProfiler\Backend\sprofile\ParseCmdLine.h

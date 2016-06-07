@@ -1,10 +1,3 @@
-//=====================================================================
-// Copyright 2016 (c), Advanced Micro Devices, Inc. All rights reserved.
-//
-/// \author AMD Developer Tools Team
-/// \file kcCLICommanderVulkan.h 
-/// 
-//=====================================================================
 #ifndef __kcCLICommanderVulkan_h
 #define __kcCLICommanderVulkan_h
 
@@ -22,31 +15,31 @@
 #include <AMDTBackEnd/Include/beProgramBuilderVulkan.h>
 
 class kcCLICommanderVulkan :
-	public kcCLICommander
+    public kcCLICommander
 {
 public:
-	kcCLICommanderVulkan();
-	virtual ~kcCLICommanderVulkan();
+    kcCLICommanderVulkan();
+    virtual ~kcCLICommanderVulkan();
 
-	// List the supported ASICs.
-	virtual void ListAsics(Config& config, LoggingCallBackFunc_t callback) override;
+    // List the supported ASICs.
+    virtual void ListAsics(Config& config, LoggingCallBackFunc_t callback) override;
 
-	// Print the Vulkan version.
-	virtual void Version(Config& config, LoggingCallBackFunc_t callback) override;
+    // Print the Vulkan version.
+    virtual void Version(Config& config, LoggingCallBackFunc_t callback) override;
 
-	// Execute the build.
-	virtual void RunCompileCommands(const Config& config, LoggingCallBackFunc_t callback) override;
+    // Execute the build.
+    virtual void RunCompileCommands(const Config& config, LoggingCallBackFunc_t callback) override;
 
 private:
 
-	// Caches the supported devices.
-	bool GetSupportedDevices();
+    // Caches the supported devices.
+    bool GetSupportedDevices();
 
-	// The builder.
-	beProgramBuilderVulkan* m_pVulkanBuilder;
-	
-	// Unique collections of the device names.
-	std::set<std::string> m_supportedDevicesCache;
+    // The builder.
+    beProgramBuilderVulkan* m_pVulkanBuilder;
+
+    // Unique collections of the device names.
+    std::set<std::string> m_supportedDevicesCache;
 };
 
 #endif // __kcCLICommanderVulkan_h

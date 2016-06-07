@@ -1,10 +1,3 @@
-//=====================================================================
-// Copyright 2016 (c), Advanced Micro Devices, Inc. All rights reserved.
-//
-/// \author AMD Developer Tools Team
-/// \file kcCLICommander.h 
-/// 
-//=====================================================================
 #ifndef _KCCLICOMMANDER_H_
 #define _KCCLICOMMANDER_H_
 
@@ -15,14 +8,11 @@
 // Local.
 #include <AMDTKernelAnalyzerCLI/src/kcConfig.h>
 #include <AMDTKernelAnalyzerCLI/src/kcDataTypes.h>
+#include <AMDTKernelAnalyzerCLI/src/kcCliStringConstants.h>
 
 using namespace std;
 
-#define IsaSuffix "amdisa"
-#define MetadataSuffix "amdMetadata"
-#define DebugilSuffix "amdDebugil"
-
-/// This is the Commander interface 
+/// This is the Commander interface
 class kcCLICommander
 {
 public:
@@ -46,11 +36,13 @@ protected: // functions
     bool LogCallBack(const std::string& theString)
     {
         bool bRet = false;
+
         if (m_LogCallback)
         {
             m_LogCallback(theString);
             bRet = true;
         }
+
         return bRet;
     }
 };

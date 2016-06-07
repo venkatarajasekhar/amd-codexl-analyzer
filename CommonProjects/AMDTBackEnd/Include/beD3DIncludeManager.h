@@ -1,10 +1,3 @@
-//=====================================================================
-// Copyright 2016 (c), Advanced Micro Devices, Inc. All rights reserved.
-//
-/// \author AMD Developer Tools Team
-/// \file beD3DIncludeManager.h 
-/// 
-//=====================================================================
 #ifndef __D3DIncludeManager_h
 #define __D3DIncludeManager_h
 

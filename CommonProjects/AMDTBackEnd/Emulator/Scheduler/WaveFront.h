@@ -1,10 +1,6 @@
-//=====================================================================
-// Copyright 2013-2016 (c), Advanced Micro Devices, Inc. All rights reserved.
-//
-/// \author AMD Developer Tools Team
-/// \file WaveFront.h
-/// 
-//=====================================================================
+//=============================================================
+// Copyright (c) 2013 Advanced Micro Devices, Inc.
+//=============================================================
 
 #ifndef __WAVEFRONT_H
 #define __WAVEFRONT_H

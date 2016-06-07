@@ -1,10 +1,3 @@
-//=====================================================================
-// Copyright 2016 (c), Advanced Micro Devices, Inc. All rights reserved.
-//
-/// \author AMD Developer Tools Team
-/// \file beDriverUtils.h 
-/// 
-//=====================================================================
 #ifndef __beDriverUtils_h
 #define __beDriverUtils_h
 

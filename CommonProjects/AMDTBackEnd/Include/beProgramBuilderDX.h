@@ -1,10 +1,3 @@
-//=====================================================================
-// Copyright 2016 (c), Advanced Micro Devices, Inc. All rights reserved.
-//
-/// \author AMD Developer Tools Team
-/// \file beProgramBuilderDX.h 
-/// 
-//=====================================================================
 #pragma once
 #include "beProgramBuilder.h"
 #include <DXXModule.h>
@@ -14,6 +7,7 @@
 
 using namespace beKA;
 class CElf;
+class CElfSection;
 
 class KA_BACKEND_DECLDIR beProgramBuilderDX : public beProgramBuilder
 {
@@ -113,12 +107,13 @@ public:
 public: // inherited functions
     beKA::beStatus GetKernels(const std::string& device, std::vector<std::string>& kernels);
     beKA::beStatus GetBinary(const std::string& device, const beKA::BinaryOptions& binopts, std::vector<char>& binary);
+    beKA::beStatus GetISABinary(const std::string& device, std::vector<char>& binary);
     beKA::beStatus GetKernelILText(const std::string& device, const std::string& kernel, std::string& il);
     beKA::beStatus GetKernelISAText(const std::string& device, const std::string& kernel, std::string& isa);
     beKA::beStatus GetStatistics(const std::string& device, const std::string& kernel, beKA::AnalysisData& analysis);
     bool IsInitialized();
     void ReleaseProgram();
-    beKA::beStatus GetDeviceTable(std::vector<GDT_GfxCardInfo>& table) const;
+    beKA::beStatus GetDeviceTable(std::vector<GDT_GfxCardInfo>& table) override;
     bool CompileOK(std::string& device);
 public:
     /// compile the specified source file
@@ -147,7 +142,7 @@ public:
     /// \returns               a status.
     beKA::beStatus GetDxShaderISAText(const std::string& device, const std::string& shader,
                                       const std::string& target, std::string& isaBuffer);
-
+    beKA::beStatus GetDxShaderIL(const std::string& device, const std::string& shader, const std::string& target, std::string& isaBuffer);
     /// Extract the size in bytes of ISA code.
     /// \param[in]  isaAsText       the ISA code as text.
     /// \param[out] sizeInBytes    the calculated size in bytes.
@@ -163,6 +158,11 @@ public:
     /// Returns the CELF* for the given device, or nullptr if no such CELF* exists.
     /// \param[in]  deviceName - the name of the device.
     CElf* GetDeviceElf(const std::string& deviceName) const;
+
+    std::vector<char> GetDeviceBinaryElf(const std::string& deviceName) const;
+
+    /// Sets the set of public device names.
+    void SetPublicDeviceNames(const std::set<std::string>& publicDeviceNames);
 
 protected:
     /// Ctor
@@ -184,12 +184,17 @@ private: // members
     bool m_bIsInitialized;
 
     std::vector<GDT_GfxCardInfo>          m_DXDeviceTable;
+    std::set<std::string> m_publicDeviceNames;
 
     /// Holds additional directories where DX binaries should be searched at.
     std::vector<std::string> m_loaderSearchDirectories;
 
-    /// Maps between a device name and its corresponding ELF pointer.
-    std::map<std::string, CElf*> m_compiledElf;
+
+    ///alias for ELF and its binary representation
+    using CelfBinaryPair = std::pair<CElf*, std::vector<char>>;
+
+    /// Maps between a device name and its corresponding ELF pointer and Elf binary.
+    std::map<std::string, CelfBinaryPair> m_compiledElf;
 
     /// Holds the D3D compiler's output.
     std::string m_msIntermediateText;
@@ -207,11 +212,13 @@ private: // functions
     beKA::beStatus CompileHLSL(const std::string& programSource, const DXOptions& dxOptions);
     beKA::beStatus CompileDXAsm(const std::string& programSource, const DXOptions& dxOptions);
     beKA::beStatus CompileDXAsmT(const std::string& programSource, const DXOptions& dxOptions);
-
+    const CElfSection* GetISATextSection(const std::string& deviceName) const;
+    const CElfSection* GetILSection(const std::string& deviceName) const;
+    std::string ToLower(const std::string& str) const;
     /// Clears the member variables which hold the build outputs.
     void ClearFormerBuildOutputs();
-
-    void SetDeviceElf(const std::string& deviceName, CElf* pElf);
+    void SetDeviceElf(const std::string& deviceName, const AmdDxGsaCompileShaderOutput& shaderOutput);
+    bool GetDeviceElfBinPair(const std::string& deviceName, CelfBinaryPair& elfBinPair) const;
 
     // Friends.
     friend class Backend;

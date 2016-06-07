@@ -1,10 +1,3 @@
-//=====================================================================
-// Copyright 2016 (c), Advanced Micro Devices, Inc. All rights reserved.
-//
-/// \author AMD Developer Tools Team
-/// \file kcIStatisticsParser.h 
-/// 
-//=====================================================================
 #ifndef kcIStatisticsParser_h__
 #define kcIStatisticsParser_h__
 
@@ -18,15 +11,15 @@
 class IStatisticsParser
 {
 public:
-	IStatisticsParser(){}
-	virtual ~IStatisticsParser(){}
+    IStatisticsParser() {}
+    virtual ~IStatisticsParser() {}
 
-	/// Parse the given raw statistics file and extract CLI statistics.
-	/// Params:
-	///		Input: the full path to the raw statistics file.
-	///		Output: the statistics in a parsed statistics.
-	/// Return value: true for success, false otherwise.
-	virtual bool ParseStatistics(const gtString& statisticsFile, beKA::AnalysisData& statistics) = 0;
+    /// Parse the given raw statistics file and extract CLI statistics.
+    /// Params:
+    ///     Input: the full path to the raw statistics file.
+    ///     Output: the statistics in a parsed statistics.
+    /// Return value: true for success, false otherwise.
+    virtual bool ParseStatistics(const gtString& statisticsFile, beKA::AnalysisData& statistics) = 0;
 };
 
 #endif // kcIStatisticsParser_h__

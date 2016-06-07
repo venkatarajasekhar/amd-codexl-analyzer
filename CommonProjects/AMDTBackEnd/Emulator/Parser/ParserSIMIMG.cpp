@@ -1,5 +1,5 @@
 //=============================================================
-/// Copyright 2013-2016 (c), Advanced Micro Devices, Inc.
+// Copyright (c) 2013 Advanced Micro Devices, Inc.
 //
 /// \file   ParserSIMIMG.cpp
 /// \author GPU Developer Tools
@@ -9,7 +9,7 @@
 //=============================================================
 // $Id: //devtools/main/CodeXL/Components/KernelAnalyzer/AMDTKernelAnalyzer/src/Emulator/Parser/ParserSIMIMG.cpp#6 $
 // Last checkin:   $DateTime: 2014/07/10 11:38:24 $
-// Last edited by: $Author:  AMD Developer Tools Team
+// Last edited by: $Author: ekatz $
 // Change list:    $Change: 499997 $
 //=============================================================
 
@@ -85,7 +85,7 @@ ParserSIMIMG::GetOpSIMIMG(Instruction::instruction64bit hexInstruction, Instruct
         instKind = Instruction::Atomics;
     }
 
-    if ((op > SIMIMGInstruction::IMAGE_LOAD_MIP_PCK_SGN && op < SIMIMGInstruction::IMAGE_STORE)
+    if ((op > SIMIMGInstruction::IMAGE_LOAD_MIP_PCK_SGN && op < SIMIMGInstruction::IMAGE_STORE) //TODO refactor this is always false!!!
         || (op > SIMIMGInstruction::IMAGE_STORE_MIP_PCK && op < SIMIMGInstruction::IMAGE_GET_RESINFO)
         || (op > SIMIMGInstruction::IMAGE_GATHER4_C_CL && op < SIMIMGInstruction::IMAGE_GATHER4_C_L)
         || (op > SIMIMGInstruction::IMAGE_GATHER4_CL_O && op < SIMIMGInstruction::IMAGE_GATHER4_L_O)

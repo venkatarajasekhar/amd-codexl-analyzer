@@ -20,13 +20,10 @@
     <ClCompile Include="$(CommonDir)\Src\ShaderUtils\DX10\IBlob.cpp" />
     <ClCompile Include="$(CommonDir)\Src\ShaderUtils\StringUtils.cpp" />
     <ClCompile Include="..\..\Common\Src\DynamicLibraryModule\OpenGLModule.cpp" />
-    <ClCompile Include="ExternGL\elf_decoder.cpp" />
-    <ClCompile Include="ExternGL\elf_dumper.cpp" />
     <ClCompile Include="src\beBackend.cpp" />
     <ClCompile Include="src\beD3DIncludeManager.cpp" />
     <ClCompile Include="src\beProgramBuilder.cpp" />
     <ClCompile Include="src\beProgramBuilderDX.cpp" />
-    <ClCompile Include="src\beProgramBuilderGL.cpp" />
     <ClCompile Include="src\beProgramBuilderOpenCL.cpp" />
     <ClCompile Include="Emulator\Parser\ParserSISMRD.cpp">
       <Filter>Emulator\Parser\src</Filter>
@@ -96,6 +93,7 @@
     <ClCompile Include="src\beProgramBuilderOpenGL.cpp" />
     <ClCompile Include="src\beUtils.cpp" />
     <ClCompile Include="src\beStaticIsaAnalyzer.cpp" />
+    <ClCompile Include="..\..\Common\Src\ACLModuleManager\ACLModuleManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(CommonDir)\Src\ADLUtil\ADLUtil.h" />
@@ -115,21 +113,12 @@
     <ClInclude Include="$(CommonDir)\Src\ShaderUtils\DX10\IBlob.h" />
     <ClInclude Include="$(CommonDir)\Src\ShaderUtils\StringUtils.h" />
     <ClInclude Include="..\..\Common\Src\DynamicLibraryModule\OpenGLModule.h" />
-    <ClInclude Include="ExternGL\AtiElfR600.h" />
-    <ClInclude Include="ExternGL\AtiElfR800.h" />
-    <ClInclude Include="ExternGL\AtiElfSI.h" />
-    <ClInclude Include="ExternGL\elf.h" />
-    <ClInclude Include="ExternGL\elf_amdtypes.h" />
-    <ClInclude Include="ExternGL\elf_decoder.h" />
-    <ClInclude Include="ExternGL\elf_dumper.h" />
-    <ClInclude Include="ExternGL\scl_types.h" />
     <ClInclude Include="Include\beAMDTBackEndDllBuild.h" />
     <ClInclude Include="Include\beBackend.h" />
     <ClInclude Include="Include\beD3DIncludeManager.h" />
     <ClInclude Include="Include\beInclude.h" />
     <ClInclude Include="Include\beProgramBuilder.h" />
     <ClInclude Include="Include\beProgramBuilderDX.h" />
-    <ClInclude Include="Include\beProgramBuilderGL.h" />
     <ClInclude Include="Include\beProgramBuilderOpenCL.h" />
     <ClInclude Include="Include\beStringConstants.h" />
     <ClInclude Include="Emulator\Parser\ParserSISMRD.h">

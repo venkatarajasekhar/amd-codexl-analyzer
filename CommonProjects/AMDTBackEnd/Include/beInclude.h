@@ -1,10 +1,3 @@
-//=====================================================================
-// Copyright 2016 (c), Advanced Micro Devices, Inc. All rights reserved.
-//
-/// \author AMD Developer Tools Team
-/// \file beInclude.h 
-/// 
-//=====================================================================
 #ifndef _BEINCLUDE_H_
 #define _BEINCLUDE_H_
 
@@ -60,13 +53,13 @@ static const CALuint64 CAL_ERR_Value_64 = (CALuint64) - 2;
 enum SourceLanguage
 {
     SourceLanguage_Invalid = 0,
-    SourceLanguage_OpenCL,		// cl source of OpenCL kernels.
-    SourceLanguage_GLSL,		// glsl input language for OpenGL (standalone, obsolete).
-	SourceLanguage_GLSL_OpenGL,	// glsl input language for OpenGL Programs.
-	SourceLanguage_GLSL_Vulkan, // glsl input language for Vulkan Programs.
-    SourceLanguage_HLSL,		// D3D/DX input language.
-    SourceLanguage_DXasm,		// The other D3D/DX input language.
-    SourceLanguage_DXasmT,		// D3D/DX Assembly as Text input language.
+    SourceLanguage_OpenCL,      // cl source of OpenCL kernels.
+    SourceLanguage_GLSL,        // glsl input language for OpenGL (standalone, obsolete).
+    SourceLanguage_GLSL_OpenGL, // glsl input language for OpenGL Programs.
+    SourceLanguage_GLSL_Vulkan, // glsl input language for Vulkan Programs.
+    SourceLanguage_HLSL,        // D3D/DX input language.
+    SourceLanguage_DXasm,       // The other D3D/DX input language.
+    SourceLanguage_DXasmT,      // D3D/DX Assembly as Text input language.
 };
 
 enum BuiltProgramKind
@@ -75,7 +68,7 @@ enum BuiltProgramKind
     BuiltProgramKind_OpenCL,
     BuiltProgramKind_OpenGL,
     BuiltProgramKind_DX,
-	BuiltProgramKind_Vulkan
+    BuiltProgramKind_Vulkan
 };
 
 enum beStatus
@@ -99,6 +92,7 @@ enum beStatus
     beStatus_NO_DEVICE_FOUND,
     beStatus_NO_IL_FOR_DEVICE,
     beStatus_NO_ISA_FOR_DEVICE,
+    beStatus_NO_STATISTICS_FOR_DEVICE,
     beStatus_NO_OPENCL_AMD_PLATFORM,
     beStatus_NO_DEBUGIL_FOR_DEVICE,
     beStatus_NO_METADATA_FOR_DEVICE,
@@ -134,13 +128,15 @@ enum beStatus
     beStatus_GLOpenGLFunctionPointersNotLoaded,
     beStatus_GLOpenGLXServerConnectionError,
     beStatus_GLOpenGLXServerChooseVisualError,
+    beStatus_GLOpenGLVirtualContextFailedToLaunch,
+    beStatus_GLOpenGLBuildError,
     beStatus_GLCannotDecodeCompiledElf,
     beStatus_GLUnknownHardwareFamily,
-	beStatus_VulkanAmdspvLaunchFailure,
-	beStatus_VulkanAmdspvCompilationFailure,
-	beStatus_liveRegCannotLocateAnalyzer,
-	beStatus_liveRegIsaFileNotFound,
-	beStatus_liveRegIsaAnalyzerFailedToLaunch,
+    beStatus_VulkanAmdspvLaunchFailure,
+    beStatus_VulkanAmdspvCompilationFailure,
+    beStatus_shaeCannotLocateAnalyzer,
+    beStatus_shaeIsaFileNotFound,
+    beStatus_shaeFailedToLaunch,
     beStatus_General_FAILED,
 };
 

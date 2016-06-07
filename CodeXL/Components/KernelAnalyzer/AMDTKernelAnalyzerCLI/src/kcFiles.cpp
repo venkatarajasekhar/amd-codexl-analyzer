@@ -1,33 +1,37 @@
 //=====================================================================
-// Copyright 2012-2016 (c), Advanced Micro Devices, Inc. All rights reserved.
+// Copyright 2012 Advanced Micro Devices, Inc. All rights reserved.
 //
-/// \author AMD Developer Tools Team
-/// \file kcFiles.cpp 
+/// \author  GPU Developer Tools
+/// \file    $File: //devtools/main/CodeXL/Components/ShaderAnalyzer/AMDTKernelAnalyzerCLI/src/kcFiles.cpp $
+/// \version $Revision: #2 $
 /// \brief   File read/write/&c. utilities.
-/// 
+//
 //=====================================================================
-#include <AMDTKernelAnalyzerCLI/src/kcFiles.h>
+// $Id: //devtools/main/CodeXL/Components/ShaderAnalyzer/AMDTKernelAnalyzerCLI/src/kcFiles.cpp#2 $
+// Last checkin:   $DateTime: 2016/04/18 06:02:03 $
+// Last edited by: $Author: salgrana $
+// Change list:    $Change: 569613 $
+//=====================================================================
 
-#ifndef _WIN32
-#pragma GCC diagnostic ignored "-Wunused-variable"
-#include <dirent.h>
-#endif
-#include <boost/filesystem.hpp>
+// C++.
+#include <sstream>
 
 // Infra.
 #include <AMDTBaseTools/Include/gtString.h>
 #include <AMDTOSWrappers/Include/osFilePath.h>
 #include <AMDTOSWrappers/Include/osDirectory.h>
 
+// Local.
+#include <AMDTKernelAnalyzerCLI/src/kcFiles.h>
+
+#ifndef _WIN32
+    #pragma GCC diagnostic ignored "-Wunused-variable"
+    #include <dirent.h>
+#endif
+
 using namespace std;
 
-namespace KAUtils
-{
-
-bool
-ReadProgramSource(
-    const string& inputFile,
-    string& programSource)
+bool KAUtils::ReadProgramSource(const string& inputFile, string& programSource)
 {
     ifstream input;
 
@@ -35,15 +39,16 @@ ReadProgramSource(
     // test if the input file is a directory.
     // On some Linux machine ifstream open will be valid if it is a directory
     // but will not allow to read data which will cause a crash when trying to read the data
-    DIR *pDir;
+    DIR* pDir;
 
-    pDir = opendir (inputFile.c_str());
+    pDir = opendir(inputFile.c_str());
 
     if (pDir != NULL)
     {
-        (void) closedir (pDir);
+        (void) closedir(pDir);
         return false;
     }
+
 #endif
 
     // Open (at e)nd of file.  We want the length below.
@@ -73,168 +78,56 @@ ReadProgramSource(
     input.close();
     return true;
 }
-string
-DecoratePath(
-    const string& stem,
-    const string& device,
-    const string& suffix, 
-    const string& kernelName)
+
+
+bool KAUtils::WriteBinaryFile(const std::string& fileName, const std::vector<char>& content, LoggingCallBackFunc_t pCallback)
 {
-    boost::filesystem::path path(stem);
-    boost::filesystem::path decoratedPath(path.parent_path());
+    bool ret = false;
+    ofstream output;
+    output.open(fileName.c_str(), ios::binary);
 
-    osFilePath targetPath;
-    if (!kernelName.empty())
+    if (output.is_open() && !content.empty())
     {
-        // Create a folder for the kernel.
-        gtString targetFolder;
-        targetFolder << decoratedPath.c_str();
-        targetPath.setFileDirectory(targetFolder);
+        output.write(&content[0], content.size());
+        output.close();
+        ret = true;
+    }
+    else
+    {
+        std::stringstream log;
+        log << "Error: Unable to open " << fileName << " for write.\n";
 
-        gtString kernelFolderName;
-        kernelFolderName << kernelName.c_str();
-        targetPath.appendSubDirectory(kernelFolderName);
-
-        if (!targetPath.exists())
+        if (pCallback != nullptr)
         {
-            osDirectory targetDir;
-            if (targetPath.getFileDirectory(targetDir))
-            {
-                assert(targetDir.create());
-            }
+            pCallback(log.str());
         }
     }
-    else
-    {
-        gtString tmpDecoratedPath;
-        tmpDecoratedPath << decoratedPath.c_str();
-        targetPath.setFileDirectory(tmpDecoratedPath);
-    }
 
-    gtString fixedFileName;
-    gtString fixedFileExtension;
-
-    // Default to .bin as an extension.
-    if (suffix.empty())
-    {
-        fixedFileName << stem.c_str();
-        targetPath.setFullPathFromString(fixedFileName);
-    }
-    else if (path.extension().empty())
-    {
-        fixedFileName << device.c_str() << "_" << path.stem().string().c_str() << suffix.c_str();
-        targetPath.setFileName(fixedFileName);
-    }
-    else
-    {
-        fixedFileName << device.c_str() << "_" << path.stem().string().c_str() << path.extension().string().c_str();
-        targetPath.setFileName(fixedFileName);
-    }
-
-    
-    //targetPath.setFileExtension(fixedFileExtension);
-    return targetPath.asString().asASCIICharArray();
+    return ret;
 }
 
-bool
-WriteBinaryFile(
-    ostream& log,
-    const string& outFile,
-    bool isPathDecorationRequired,
-    const vector<char>& binary,
-    const string& deviceName)
+bool KAUtils::WriteTextFile(const std::string& fileName, const std::string& content, LoggingCallBackFunc_t pCallback)
 {
-    string decoratedPath;
-    if (isPathDecorationRequired)
-    {
-        string sNormelizeDeviceName;
-        kaNormelizeDeviceName(deviceName, sNormelizeDeviceName);
-        decoratedPath = DecoratePath(outFile, sNormelizeDeviceName, "bin", "");
-    }
-    else
-    {
-        decoratedPath = outFile;
-    }
-
+    bool ret = false;
     ofstream output;
-    output.open(decoratedPath.c_str(), ios::binary);
+    output.open(fileName.c_str());
 
     if (output.is_open())
     {
-        output.write(&binary[0], binary.size());
-
-        if (output.fail())
-        {
-            output.close();
-
-            log << "Error: Unable to write " << decoratedPath << " for write.\n";
-            return false;
-        }
-
+        output << content << std::endl;
         output.close();
+        ret = true;
     }
     else
     {
-        log << "Error: Unable to open " << decoratedPath << " for write.\n";
-        return false;
-    }
+        std::stringstream log;
+        log << "Error: Unable to open " << fileName << " for write.\n";
 
-    return true;
-}
-
-bool WriteTextFile(
-    std::ostream& log,
-    const std::string& stem,
-    const std::string& suffix,
-    const std::string& text,
-    const std::string& deviceName, const std::string& kernelName)
-{
-	string sNormelizeDeviceName;
-	kaNormelizeDeviceName(deviceName, sNormelizeDeviceName);
-    string decoratedPath = DecoratePath(stem, sNormelizeDeviceName, suffix, kernelName);
-    ofstream output;
-    output.open(decoratedPath.c_str());
-
-    if (output.is_open())
-    {
-        output.write(text.c_str(), text.size());
-
-        if (output.fail())
+        if (pCallback != nullptr)
         {
-            output.close();
-
-            log << "Error: Unable to write " << decoratedPath << " for write.\n";
-            return false;
+            pCallback(log.str());
         }
-
-        output.close();
-    }
-    else
-    {
-        log << "Error: Unable to open " << decoratedPath << " for write.\n";
-        return false;
     }
 
-    return true;
+    return ret;
 }
-
-void kaNormelizeDeviceName(const std::string& sOrigin, std::string& sDest)
-{
-	// go over the name and replace funny characters with _ because we later make it as a file name
-	sDest = sOrigin;
-	std::size_t found = sDest.find("/");
-
-	for (; found != std::string::npos; found = sDest.find("/"))
-	{
-		sDest.replace(found, 1, "_");
-	}
-
-	found = sDest.find(":");
-
-	for (; found != std::string::npos; found = sDest.find(":"))
-	{
-		sDest.replace(found, 1, "_");
-	}
-}
-
-}; // namespace

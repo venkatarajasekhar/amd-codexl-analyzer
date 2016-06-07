@@ -1,15 +1,15 @@
-//=====================================================================
-// Copyright 2013-2016 (c), Advanced Micro Devices, Inc. All rights reserved.
+//=============================================================
+// Copyright (c) 2013 Advanced Micro Devices, Inc.
 //
-/// \author AMD Developer Tools Team
-/// \file ParserSI.cpp 
+/// \file   ParserSI.cpp
+/// \author GPU Developer Tools
+/// \version $Revision: #5 $
 /// \brief Description: Parser for SI ISA
-//=====================================================================
-
+//
 //=============================================================
 // $Id: //devtools/main/CodeXL/Components/KernelAnalyzer/AMDTKernelAnalyzer/src/Emulator/Parser/ParserSI.cpp#5 $
 // Last checkin:   $DateTime: 2015/05/10 04:38:55 $
-// Last edited by: $Author:  AMD Developer Tools Team
+// Last edited by: $Author: abenmos $
 // Change list:    $Change: 526865 $
 //=============================================================
 

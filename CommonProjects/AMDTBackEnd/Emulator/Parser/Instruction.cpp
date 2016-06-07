@@ -1,11 +1,3 @@
-//=====================================================================
-// Copyright 2016 (c), Advanced Micro Devices, Inc. All rights reserved.
-//
-/// \author AMD Developer Tools Team
-/// \file Instruction.cpp 
-/// 
-//=====================================================================
-
 #include <AMDTBackEnd/Emulator/Parser/Instruction.h>
 
 // C++.
@@ -1301,45 +1293,55 @@ void Instruction::SetUpQuarterDevicesPerfTables()
 std::string Instruction::GetFunctionalUnitAsString(InstructionCategory category)
 {
     std::string ret;
+
     switch (category)
     {
-    case ScalarMemoryRead:
-    case ScalarMemoryWrite:
-    case ScalarALU:
-        ret = FUNC_UNIT_SCALAR;
-        break;
-    case VectorMemoryRead:
-    case VectorMemoryWrite:
-        ret = FUNC_UNIT_VMEM;
-        break;
-    case VectorALU:
-        ret = FUNC_UNIT_VALU;
-        break;
-    case LDS:
-        ret = FUNC_UNIT_LDS;
-        break;
-    case GDS:
-    case Export:
-        ret = FUNC_UNIT_GDS_EXPORT;
-        break;
-    case Atomics:
-        ret = FUNC_UNIT_ATOMICS;
-        break;
-    case Internal:
-        // We will still name it "Flow Control"
-        // so that it will be meaningful for the end user.
-        ret = FUNC_UNIT_INTERNAL_FLOW;
-        break;
-    case Branch:
-        ret = FUNC_UNIT_BRANCH;
-        break;
-    default:
-        ret = FUNC_UNIT_UNKNOWN;
+        case ScalarMemoryRead:
+        case ScalarMemoryWrite:
+        case ScalarALU:
+            ret = FUNC_UNIT_SCALAR;
+            break;
 
-        // We shouldn't get here.
-        GT_ASSERT(false);
-        break;
+        case VectorMemoryRead:
+        case VectorMemoryWrite:
+            ret = FUNC_UNIT_VMEM;
+            break;
+
+        case VectorALU:
+            ret = FUNC_UNIT_VALU;
+            break;
+
+        case LDS:
+            ret = FUNC_UNIT_LDS;
+            break;
+
+        case GDS:
+        case Export:
+            ret = FUNC_UNIT_GDS_EXPORT;
+            break;
+
+        case Atomics:
+            ret = FUNC_UNIT_ATOMICS;
+            break;
+
+        case Internal:
+            // We will still name it "Flow Control"
+            // so that it will be meaningful for the end user.
+            ret = FUNC_UNIT_INTERNAL_FLOW;
+            break;
+
+        case Branch:
+            ret = FUNC_UNIT_BRANCH;
+            break;
+
+        default:
+            ret = FUNC_UNIT_UNKNOWN;
+
+            // We shouldn't get here.
+            GT_ASSERT(false);
+            break;
     }
+
     return ret;
 }
 

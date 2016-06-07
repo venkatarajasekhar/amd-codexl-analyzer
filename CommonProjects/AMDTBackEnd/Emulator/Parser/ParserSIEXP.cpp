@@ -1,6 +1,6 @@
 //=============================================================
-/// Copyright 2013-2016 (c), Advanced Micro Devices, Inc.
-///
+// Copyright (c) 2013 Advanced Micro Devices, Inc.
+//
 /// \file   ParserSIEXP.cpp
 /// \author GPU Developer Tools
 /// \version $Revision: #4 $
@@ -9,7 +9,7 @@
 //=============================================================
 // $Id: //devtools/main/CodeXL/Components/KernelAnalyzer/AMDTKernelAnalyzer/src/Emulator/Parser/ParserSIEXP.cpp#4 $
 // Last checkin:   $DateTime: 2014/07/10 11:38:24 $
-// Last edited by: $Author:  AMD Developer Tools Team
+// Last edited by: $Author: ekatz $
 // Change list:    $Change: 499997 $
 //=============================================================
 

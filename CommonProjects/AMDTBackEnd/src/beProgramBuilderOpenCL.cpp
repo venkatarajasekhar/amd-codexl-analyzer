@@ -1,15 +1,9 @@
-//=====================================================================
-// Copyright 2016 (c), Advanced Micro Devices, Inc. All rights reserved.
-//
-/// \author AMD Developer Tools Team
-/// \file beProgramBuilderOpenCL.cpp 
-/// 
-//=====================================================================
 
 #include <CElf.h>
 #include <locale>
 // This is from ADL's include directory.
 #include <ADLUtil.h>
+#include <ACLModuleManager.h>
 #include <customer/oem_structures.h>
 #include <DeviceInfoUtils.h>
 #include <AMDTBaseTools/Include/gtDefinitions.h>
@@ -108,6 +102,8 @@ static bool IsNotNormalChar(char c)
 }
 
 std::string* beProgramBuilderOpenCL::s_pISAString = NULL;
+std::string beProgramBuilderOpenCL::s_HSAILDisassembly;
+size_t beProgramBuilderOpenCL::gs_DisassembleCounter = 0;
 
 /// Filter buildLog of temporary OpenCL file names.
 /// \param buildLog The log to be filtered.
@@ -197,14 +193,16 @@ static std::string PostProcessOpenCLBuildLog(const std::string& buildLog, const 
     return out;
 }
 
-beProgramBuilderOpenCL::beProgramBuilderOpenCL():
+beProgramBuilderOpenCL::beProgramBuilderOpenCL() :
     m_TheOpenCLModule(OpenCLModule::s_DefaultModuleName),
+    m_pTheACLModule(nullptr),
+    m_pTheACLCompiler(nullptr),
     m_TheCALCLModule(CALCLModule::s_DefaultModuleName),
     m_NumOpenCLDevices(0),
     m_IsIntialized(false),
-    m_forceEnding(false)
+    m_forceEnding(false),
+    m_isLegacyMode(false)
 {
-
 }
 // interface
 bool beProgramBuilderOpenCL::IsInitialized()
@@ -289,35 +287,6 @@ beKA::beStatus beProgramBuilderOpenCL::InitializeOpenCL()
         LogCallBack(ss.str());
 
         return beKA::beStatus_OpenCL_MODULE_TOO_OLD;
-    }
-
-    bool aclModuleLoaded = true;
-
-    // cal driver is used only for drivers older than 13.101 and acl is used for driver 13.101 and newer
-    if (!m_TheACLModule.IsLoaded())
-    {
-        std::stringstream ss;
-        ss << "Error: " << ACLModule::s_DefaultModuleName << " module not loaded." << endl;
-        LogCallBack(ss.str());
-        aclModuleLoaded = false;
-        retVal = beKA::beStatus_ACL_MODULE_NOT_LOADED;
-    }
-
-    bool calModuleLoaded = true;
-
-    if (!m_TheCALCLModule.IsLoaded())
-    {
-        std::stringstream ss;
-        ss << "Error: " << CALCLModule::s_DefaultModuleName << " module not loaded." << endl;
-        LogCallBack(ss.str());
-        calModuleLoaded = false;
-        retVal = beKA::beStatus_CALCL_MODULE_NOT_LOADED;
-    }
-
-    // one of the m_TheACLModule or m_TheCALCLModule needs to be loaded:
-    if (!aclModuleLoaded && !calModuleLoaded)
-    {
-        return retVal;
     }
 
     // continue with initialization
@@ -410,11 +379,11 @@ beKA::beStatus beProgramBuilderOpenCL::InitializeOpenCL()
             cl_context_properties properties[] =
             {
                 CL_CONTEXT_PLATFORM,
-                (cl_context_properties) platform,
+                (cl_context_properties)platform,
                 CL_CONTEXT_OFFLINE_DEVICES_AMD,
-                (cl_context_properties) 1,
-                (cl_context_properties) NULL,
-                (cl_context_properties) NULL
+                (cl_context_properties)1,
+                (cl_context_properties)NULL,
+                (cl_context_properties)NULL
             };
 
             m_OpenCLContext = m_TheOpenCLModule.CreateContextFromType(properties, CL_DEVICE_TYPE_ALL, NULL, NULL, &status);
@@ -556,7 +525,7 @@ beKA::beStatus beProgramBuilderOpenCL::InitializeOpenCL()
     if (retVal == beKA::beStatus_SUCCESS) // no point checking the version if nothing is loaded
     {
         m_IsIntialized = true;
-        m_OpenCLVersionInfo += string("\nGraphics Driver Version: ") + string(GetDriverVersion());
+        m_OpenCLVersionInfo += string("\nGraphics Driver Version: ") + m_DriverVersion;
     }
 
     return retVal;
@@ -605,7 +574,7 @@ beKA::beStatus beProgramBuilderOpenCL::GetKernels(const std::string& device, std
 
         if (m_ElvesMap[device] == NULL)
         {
-            retVal =  beKA::beStatus_NO_BINARY_FOR_DEVICE;
+            retVal = beKA::beStatus_NO_BINARY_FOR_DEVICE;
         }
 
         if (NULL != elf.GetSymbolTable())
@@ -616,6 +585,8 @@ beKA::beStatus beProgramBuilderOpenCL::GetKernels(const std::string& device, std
             // Look for symbols of the form <kernelPrefix><name><kernelSuffix>.
             string kernelSuffix("_kernel");
             const string kernelPrefix("__OpenCL_");
+            const string kernelPrefixHsail("__OpenCL_&__OpenCL_");
+            const string kernelSuffixHsail("_kernel_metadata");
 
             if (elf.GetSection(".text") == NULL)
             {
@@ -647,11 +618,17 @@ beKA::beStatus beProgramBuilderOpenCL::GetKernels(const std::string& device, std
                     // Pick out the meaty goodness that is the kernel name.
                     kernels.push_back(name.substr(kernelPrefix.size(), name.length() - kernelPrefix.size() - kernelSuffix.size()));
                 }
+                else if (name.substr(0, kernelPrefixHsail.size()) == kernelPrefixHsail &&
+                         name.substr(name.length() - kernelSuffixHsail.size(), kernelSuffixHsail.size()) == kernelSuffixHsail)
+                {
+                    // Fallback to the HSAIL (BIF) scenario.
+                    kernels.push_back(name.substr(kernelPrefixHsail.size(), name.length() - kernelPrefixHsail.size() - kernelSuffixHsail.size()));
+                }
             }
         }
         else
         {
-            retVal =  beKA::beStatus_NO_BINARY_FOR_DEVICE;
+            retVal = beKA::beStatus_NO_BINARY_FOR_DEVICE;
         }
     }
 
@@ -849,107 +826,116 @@ beKA::beStatus beProgramBuilderOpenCL::DeinitializeOpenCL()
 
 beKA::beStatus beProgramBuilderOpenCL::GetAnalysisInternal(cl_program& program, const std::string& device, const std::string& kernel, beKA::AnalysisData* analysis)
 {
-    if (m_ElvesMap.count(device) == 0)
+    beKA::beStatus ret = beKA::beStatus_SUCCESS;
+    std::string strKernelName;
+    std::string strKernelNameAlt;
+
+    bool doesUseHsail = !m_isLegacyMode && DoesUseHsailPath(device);
+    const size_t NUM_OF_ATTEMPTS = doesUseHsail ? 2 : 1;
+
+    for (size_t i = 0; i < NUM_OF_ATTEMPTS; i++)
     {
-        std::stringstream ss;
-        ss << "Error: No binary for device \'" << device << "\'.\n";
-        LogCallBack(ss.str());
-        return beKA::beStatus_NO_BINARY_FOR_DEVICE;
-    }
+        if (doesUseHsail && i > 0)
+        {
+            // If we haven't succeeded with the HSAIL path, fallback to the AMDIL path.
+            doesUseHsail = false;
+        }
 
-    // Guard against CPU devices.
-    if (m_NameDeviceTypeMap[device] == CL_DEVICE_TYPE_CPU)
-    {
-        return beKA::beStatus_NO_ISA_FOR_DEVICE;
-    }
+        if (doesUseHsail)
+        {
+            strKernelName = "&__OpenCL_" + kernel + "_kernel";
+            strKernelNameAlt = kernel;
+        }
+        else
+        {
+            strKernelName = kernel;
+            strKernelNameAlt = "&__OpenCL_" + kernel + "_kernel";
+        }
 
-    memset((void*)analysis, 0, sizeof(beKA::AnalysisData));
+        cl_device_id deviceId = m_NameDeviceIdMap[device];
+        cl_int       status;
+        cl_kernel    k = m_TheOpenCLModule.CreateKernel(program, strKernelName.c_str(), &status);
 
-    const CElf& elf = *m_ElvesMap[device];
+        if (status == CL_INVALID_KERNEL_NAME)
+        {
+            // Retry with the alternative kernel name.
+            k = m_TheOpenCLModule.CreateKernel(program, strKernelNameAlt.c_str(), &status);
+        }
 
-    if (NULL == elf.GetSymbolTable())
-    {
-        return beKA::beStatus_NO_ISA_FOR_DEVICE;
-    }
-
-    const CElfSymbolTable& symtab = *elf.GetSymbolTable();
-
-    string amdilName = "__OpenCL_" + kernel + "_kernel";
-    CElfSymbolTable::const_SymbolIterator symIt = symtab.GetSymbol(amdilName);
-
-    if (symIt == symtab.SymbolsEnd())
-    {
-        std::stringstream ss;
-        ss << "Error: No ISA for device \'" << device << "\'.\n";
-        LogCallBack(ss.str());
-
-        return beKA::beStatus_NO_ISA_FOR_DEVICE;
-    }
-
-    string name;
-    unsigned char bind;
-    unsigned char type;
-    unsigned char other;
-    CElfSection*  section;
-    Elf64_Addr    value;
-    Elf64_Xword   size;
-
-    symtab.GetInfo(symIt, &name, &bind, &type, &other, &section, &value, &size);
-
-    // TODO: Do we need more length checks, or can we trust vector to do it for us?
-    // TODO: Check that section is .text?
-    vector<char> sectionData(section->GetData());
-    // Get the part that we care about.
-    vector<char> isaBinary(sectionData.begin() + size_t(value), sectionData.begin() + size_t(value + size));
-
-    cl_device_id deviceId = m_NameDeviceIdMap[device];
-    cl_int       status;
-    cl_kernel    k        = m_TheOpenCLModule.CreateKernel(program, kernel.c_str(), &status);
+        if (status == CL_SUCCESS)
+        {
 
 #define X(FIELD,PARAM) Inquire(&FIELD,sizeof(FIELD),PARAM,k,deviceId);
-    X(analysis->maxScratchRegsNeeded, CL_KERNELINFO_SCRATCH_REGS)
-    X(analysis->numWavefrontPerSIMD, CL_KERNELINFO_WAVEFRONT_PER_SIMD)
-    X(analysis->wavefrontSize, CL_KERNELINFO_WAVEFRONT_SIZE)
-    X(analysis->numGPRsAvailable, CL_KERNELINFO_AVAILABLE_GPRS)
-    X(analysis->numGPRsUsed, CL_KERNELINFO_USED_GPRS)
-    X(analysis->LDSSizeAvailable, CL_KERNELINFO_AVAILABLE_LDS_SIZE)
-    X(analysis->LDSSizeUsed, CL_KERNELINFO_USED_LDS_SIZE)
-    X(analysis->stackSizeAvailable, CL_KERNELINFO_AVAILABLE_STACK_SIZE)
-    X(analysis->stackSizeUsed, CL_KERNELINFO_USED_STACK_SIZE)
-    X(analysis->numSGPRsAvailable, CL_KERNELINFO_AVAILABLE_SGPRS)
-    X(analysis->numSGPRsUsed, CL_KERNELINFO_USED_SGPRS)
-    X(analysis->numVGPRsAvailable, CL_KERNELINFO_AVAILABLE_VGPRS)
-    X(analysis->numVGPRsUsed, CL_KERNELINFO_USED_VGPRS)
+            X(analysis->maxScratchRegsNeeded, CL_KERNELINFO_SCRATCH_REGS)
+            X(analysis->numWavefrontPerSIMD, CL_KERNELINFO_WAVEFRONT_PER_SIMD)
+            X(analysis->wavefrontSize, CL_KERNELINFO_WAVEFRONT_SIZE)
+            X(analysis->numGPRsAvailable, CL_KERNELINFO_AVAILABLE_GPRS)
+            X(analysis->numGPRsUsed, CL_KERNELINFO_USED_GPRS)
+            X(analysis->LDSSizeAvailable, CL_KERNELINFO_AVAILABLE_LDS_SIZE)
+            X(analysis->LDSSizeUsed, CL_KERNELINFO_USED_LDS_SIZE)
+            X(analysis->stackSizeAvailable, CL_KERNELINFO_AVAILABLE_STACK_SIZE)
+            X(analysis->stackSizeUsed, CL_KERNELINFO_USED_STACK_SIZE)
+            X(analysis->numSGPRsAvailable, CL_KERNELINFO_AVAILABLE_SGPRS)
+            X(analysis->numSGPRsUsed, CL_KERNELINFO_USED_SGPRS)
+            X(analysis->numVGPRsAvailable, CL_KERNELINFO_AVAILABLE_VGPRS)
+            X(analysis->numVGPRsUsed, CL_KERNELINFO_USED_VGPRS)
 #undef X
 
-    // get the clGetKernelWorkGroupInfo
-    size_t compileWorkGroupSize[3];     /**< compileWorkGroupSize WorkGroup size as mentioned in kernel source */
-    status = m_TheOpenCLModule.GetKernelWorkGroupInfo(k, deviceId, CL_KERNEL_COMPILE_WORK_GROUP_SIZE, sizeof(size_t) * 3, compileWorkGroupSize, NULL);
+            // get the clGetKernelWorkGroupInfo
+            size_t compileWorkGroupSize[3];     /**< compileWorkGroupSize WorkGroup size as mentioned in kernel source */
+            status = m_TheOpenCLModule.GetKernelWorkGroupInfo(k, deviceId, CL_KERNEL_COMPILE_WORK_GROUP_SIZE, sizeof(size_t) * 3, compileWorkGroupSize, NULL);
 
-    if (CL_SUCCESS == status)
-    {
-        analysis->numThreadPerGroupX = compileWorkGroupSize[0];
-        analysis->numThreadPerGroupY = compileWorkGroupSize[1];
-        analysis->numThreadPerGroupZ = compileWorkGroupSize[2];
+            if (CL_SUCCESS == status)
+            {
+                analysis->numThreadPerGroupX = compileWorkGroupSize[0];
+                analysis->numThreadPerGroupY = compileWorkGroupSize[1];
+                analysis->numThreadPerGroupZ = compileWorkGroupSize[2];
+            }
+
+            // TODO: Add code to gather the other info clGetKernelWorkGroupInfo provides.
+            m_TheOpenCLModule.ReleaseKernel(k);
+
+            // SI reports no numGPRs.
+            // pre-SI reports no numVGPRs nor numSGPRs.
+            // To avoid confusing the user, copy the pre-SI GPR numbers to VGPR.
+            // They are vector registers ...  the scalars are new with SI.
+            if (analysis->numVGPRsAvailable == 0 && analysis->numSGPRsAvailable == 0)
+            {
+                analysis->numVGPRsAvailable = analysis->numGPRsAvailable;
+                analysis->numVGPRsUsed = analysis->numGPRsUsed;
+
+                analysis->numSGPRsAvailable = beKA::CAL_NA_Value_64;
+                analysis->numSGPRsUsed = beKA::CAL_NA_Value_64;
+            }
+
+            // No further attempts are required.
+            break;
+        }
+        else if (i == (NUM_OF_ATTEMPTS - 1))
+        {
+            // Try to extract the statistics from the textual ISA.
+            // This should at least give us basic info for until the HSAIL-path
+            // statistics generation issue is fixed.
+            std::string isa;
+            beKA::beStatus rc =  GetKernelISAText(device, kernel, isa);
+            bool wereStatsExtracted = false;
+
+            if (rc == beStatus_SUCCESS)
+            {
+                wereStatsExtracted = ParserISA::ParseHsailStatistics(isa, *analysis);
+            }
+
+            if (!wereStatsExtracted)
+            {
+                ret = beKA::beStatus_NO_STATISTICS_FOR_DEVICE;
+                stringstream ss;
+                ss << "Error: No statistics for \'" << device << "\'.\n";
+                LogCallBack(ss.str());
+            }
+        }
     }
 
-    // TODO: Add code to gather the other info clGetKernelWorkGroupInfo provides.
-    m_TheOpenCLModule.ReleaseKernel(k);
-
-    // SI reports no numGPRs.
-    // pre-SI reports no numVGPRs nor numSGPRs.
-    // To avoid confusing the user, copy the pre-SI GPR numbers to VGPR.
-    // They are vector registers ...  the scalars are new with SI.
-    if (analysis->numVGPRsAvailable == 0 && analysis->numSGPRsAvailable == 0)
-    {
-        analysis->numVGPRsAvailable = analysis->numGPRsAvailable;
-        analysis->numVGPRsUsed      = analysis->numGPRsUsed;
-
-        analysis->numSGPRsAvailable = beKA::CAL_NA_Value_64;
-        analysis->numSGPRsUsed      = beKA::CAL_NA_Value_64;
-    }
-
-    return beKA::beStatus_SUCCESS;
+    return ret;
 }
 
 beKA::beStatus beProgramBuilderOpenCL::GetKernelDebugILText(const std::string& device, const std::string& kernel, std::string& debugil)
@@ -1008,19 +994,57 @@ beKA::beStatus beProgramBuilderOpenCL::GetKernelDebugILText(const std::string& d
 
 beKA::beStatus beProgramBuilderOpenCL::GetKernelMetaDataText(const std::string& device, const std::string& kernel, std::string& metadata)
 {
-    string amdilName;
+    beKA::beStatus ret = beStatus_NO_METADATA_FOR_DEVICE;
+    std::string amdilName;
     amdilName = "__OpenCL_" + kernel + "_metadata";
 
-    return GetKernelSectionText(device, amdilName, metadata);
+    // Basically, for HSAIL we should use the following symbol name
+    // for extracting the metadata section: "__OpenCL_&__OpenCL_" + kernel + "_kernel_metadata",
+    // but it seems like we are unable to parse it.
+    bool doesUseHsail = !m_isLegacyMode && DoesUseHsailPath(device);
+
+    if (!doesUseHsail)
+    {
+        ret = GetKernelSectionText(device, amdilName, metadata);
+    }
+
+    return ret;
 }
 
 
 beKA::beStatus beProgramBuilderOpenCL::GetKernelILText(const std::string& device, const std::string& kernel, std::string& il)
 {
-    string amdilName;
-    amdilName = "__OpenCL_" + kernel + "_amdil";
+    beKA::beStatus ret = beStatus_General_FAILED;
+    il.clear();
 
-    return GetKernelSectionText(device, amdilName, il);
+    bool doesUseHsail = !m_isLegacyMode && DoesUseHsailPath(device);
+    const size_t NUM_OF_ATTEMPTS = doesUseHsail ? 2 : 1;
+
+    for (size_t i = 0; i < NUM_OF_ATTEMPTS; i++)
+    {
+        if (doesUseHsail && i > 0)
+        {
+            // If we haven't succeeded with the HSAIL path, fallback to the AMDIL path.
+            doesUseHsail = false;
+        }
+
+        if (doesUseHsail && !s_HSAILDisassembly.empty())
+        {
+            il = s_HSAILDisassembly;
+            ret = beKA::beStatus_SUCCESS;
+
+            // No further attempts are required.
+            break;
+        }
+        else
+        {
+            std::string amdilName;
+            amdilName = "__OpenCL_" + kernel + "_amdil";
+            ret = GetKernelSectionText(device, amdilName, il);
+        }
+    }
+
+    return ret;
 }
 
 beKA::beStatus beProgramBuilderOpenCL::GetKernelSectionText(const std::string& device, const std::string& kernel, std::string& il)
@@ -1089,7 +1113,7 @@ beKA::beStatus beProgramBuilderOpenCL::GetKernelSectionText(const std::string& d
         }
         else
         {
-            retVal =  beKA::beStatus_NO_IL_FOR_DEVICE;
+            retVal = beKA::beStatus_NO_IL_FOR_DEVICE;
         }
     }
 
@@ -1153,39 +1177,44 @@ beKA::beStatus beProgramBuilderOpenCL::GetKernelISAText(const std::string& devic
     {
         string name;
 
-        if (m_TheACLModule.IsLoaded())
+        bool doesUseHsail = !m_isLegacyMode && DoesUseHsailPath(device);
+        const size_t NUM_OF_ATTEMPTS = doesUseHsail ? 2 : 1;
+
+        for (size_t i = 0; i < NUM_OF_ATTEMPTS; i++)
         {
-            acl_error aclErr;
+            gs_DisassembleCounter = 0;
+            s_HSAILDisassembly.clear();
+            s_pISAString = new std::string;
 
-            // aclCompiler object
-            aclCompiler* pCom = m_TheACLModule.CompilerInit(NULL, &aclErr);
-
-            if (aclErr != ACL_SUCCESS)
+            if (doesUseHsail && i > 0)
             {
-                std::stringstream ss;
-                ss << "Error: Compiler init failed (ACLModule) " << aclErr << ".\n";
-                LogCallBack(ss.str());
-                retVal = beKA::beStatus_ACLCompile_FAILED;
+                // If we haven't succeeded with the HSAIL path, fallback to the AMDIL path.
+                doesUseHsail = false;
             }
 
-            aclBinary* pAclBin = NULL;
-            std::map<std::string, std::vector<char> >::iterator iter = m_BinDeviceMap.find(device);
+            ACLModuleManager::Instance()->GetACLModule(doesUseHsail, m_pTheACLModule, m_pTheACLCompiler);
 
-            if (retVal == beKA::beStatus_SUCCESS)
+            if (m_pTheACLModule != nullptr && m_pTheACLModule->IsLoaded())
             {
-                if (iter == m_BinDeviceMap.end())
+                acl_error aclErr;
+
+                // aclCompiler object
+                aclCompiler* pCom = m_pTheACLModule->CompilerInit(NULL, &aclErr);
+
+                if (aclErr != ACL_SUCCESS)
                 {
                     std::stringstream ss;
-                    ss << "Error: No binary for device \'" << device << "\'.\n";
+                    ss << "Error: Compiler init failed (ACLModule) " << aclErr << ".\n";
                     LogCallBack(ss.str());
-
-                    retVal = beKA::beStatus_NO_BINARY_FOR_DEVICE;
+                    retVal = beKA::beStatus_ACLCompile_FAILED;
                 }
-                else
-                {
-                    std::vector<char>& vBin = iter->second;
 
-                    if (vBin.size() < 1)
+                aclBinary* pAclBin = NULL;
+                std::map<std::string, std::vector<char> >::iterator iter = m_BinDeviceMap.find(device);
+
+                if (retVal == beKA::beStatus_SUCCESS)
+                {
+                    if (iter == m_BinDeviceMap.end())
                     {
                         std::stringstream ss;
                         ss << "Error: No binary for device \'" << device << "\'.\n";
@@ -1193,52 +1222,109 @@ beKA::beStatus beProgramBuilderOpenCL::GetKernelISAText(const std::string& devic
 
                         retVal = beKA::beStatus_NO_BINARY_FOR_DEVICE;
                     }
-                }
-            }
-
-            if (retVal == beKA::beStatus_SUCCESS)
-            {
-                std::vector<char>& vBin = iter->second;
-
-                // aclCompiler object
-                char* cBin = reinterpret_cast<char*>(&vBin[0]);
-                aclErr = ACL_SUCCESS;
-                pAclBin = m_TheACLModule.ReadFromMem(cBin, vBin.size(), &aclErr);
-
-                if (aclErr != ACL_SUCCESS)
-                {
-                    retVal = beKA::beStatus_ACLBinary_FAILED;
-                }
-                else
-                {
-                    try
+                    else
                     {
-                        s_pISAString = &isa;
-                        s_pISAString->clear();
-                        aclErr = m_TheACLModule.Disassemble(pCom, pAclBin, kernel.c_str(), disassembleLogFunction);
-                        m_TheACLModule.BinaryFini(pAclBin);
-                        m_TheACLModule.CompilerFini(pCom);
+                        std::vector<char>& vBin = iter->second;
 
-                        if (ACL_SUCCESS != aclErr)
+                        if (vBin.size() < 1)
                         {
-                            retVal = beStatus_NO_ISA_FOR_DEVICE;
+                            std::stringstream ss;
+                            ss << "Error: No binary for device \'" << device << "\'.\n";
+                            LogCallBack(ss.str());
+
+                            retVal = beKA::beStatus_NO_BINARY_FOR_DEVICE;
                         }
                     }
-                    catch (...)
+                }
+
+                if (retVal == beKA::beStatus_SUCCESS)
+                {
+                    std::vector<char>& vBin = iter->second;
+
+                    // aclCompiler object
+                    char* cBin = reinterpret_cast<char*>(&vBin[0]);
+                    aclErr = ACL_SUCCESS;
+                    pAclBin = m_pTheACLModule->ReadFromMem(cBin, vBin.size(), &aclErr);
+
+                    if (aclErr != ACL_SUCCESS)
                     {
-                        retVal = beKA::beStatus_NO_ISA_FOR_DEVICE;
+                        retVal = beKA::beStatus_ACLBinary_FAILED;
+                    }
+                    else
+                    {
+                        try
+                        {
+                            gs_DisassembleCounter = 0;
+                            s_pISAString = &isa;
+                            s_pISAString->clear();
+                            s_HSAILDisassembly.clear();
+
+                            std::string strKernelName;
+                            std::string strKernelNameAlt;
+
+                            // For HSAIL kernels, try the "&__OpenCL..." kernel name first, as that is the most-likely kernel symbol name
+                            // For non-HSAIL kernels, try the undecorated kernel name first, as that is the most-likely kernel symbol name
+                            // In both cases, fall back to the other name if the most-likely name fails
+                            if (doesUseHsail)
+                            {
+                                strKernelName = "&__OpenCL_" + kernel + "_kernel";
+                                strKernelNameAlt = kernel;
+                            }
+                            else
+                            {
+                                strKernelName = kernel;
+                                strKernelNameAlt = "&__OpenCL_" + kernel + "_kernel";
+                            }
+
+                            aclErr = m_pTheACLModule->Disassemble(m_pTheACLCompiler, pAclBin, strKernelName.c_str(), disassembleLogFunction);
+
+                            bool isDisassembleFailed = (aclErr != ACL_SUCCESS);
+
+                            if (isDisassembleFailed)
+                            {
+                                s_pISAString->clear();
+                                s_HSAILDisassembly.clear();
+                                gs_DisassembleCounter = 0;
+                                aclErr = m_pTheACLModule->Disassemble(m_pTheACLCompiler, pAclBin, strKernelNameAlt.c_str(), disassembleLogFunction);
+                            }
+
+                            // Cleanup.
+                            m_pTheACLModule->BinaryFini(pAclBin);
+                            m_pTheACLModule->CompilerFini(pCom);
+
+                            if (!isDisassembleFailed && !s_pISAString->empty())
+                            {
+                                // No need for further attempts.
+                                break;
+                            }
+
+                            if (!doesUseHsail)
+                            {
+                                if (ACL_SUCCESS != aclErr)
+                                {
+                                    retVal = beStatus_NO_ISA_FOR_DEVICE;
+                                }
+
+                                // No need for further attempts.
+                                break;
+                            }
+                        }
+                        catch (...)
+                        {
+                            retVal = beKA::beStatus_NO_ISA_FOR_DEVICE;
+                        }
                     }
                 }
-            }
 
 
-            if (retVal != beKA::beStatus_SUCCESS)
-            {
-                std::stringstream ss;
-                ss << "Error: Failed getting the disassembly for kernel: " << kernel << " on device: " << device << ".\n";
-                LogCallBack(ss.str());
+                if (!doesUseHsail && retVal != beKA::beStatus_SUCCESS)
+                {
+                    std::stringstream ss;
+                    ss << "Error: Failed getting the disassembly for kernel: " << kernel << " on device: " << device << ".\n";
+                    LogCallBack(ss.str());
 
-                retVal = beKA::beStatus_NO_ISA_FOR_DEVICE;
+                    retVal = beKA::beStatus_NO_ISA_FOR_DEVICE;
+                }
             }
         }
     }
@@ -1299,6 +1385,18 @@ beKA::beStatus beProgramBuilderOpenCL::Compile(const std::string& programSource,
         return beStatus_OpenCL_MODULE_NOT_LOADED;
     }
 
+    const char* STR_LEGACY_FLAG = "-legacy";
+
+    // Check if we are in legacy mode.
+    for (const std::string& opt : oclOptions.m_OpenCLCompileOptions)
+    {
+        if (opt.compare(STR_LEGACY_FLAG) == 0)
+        {
+            m_isLegacyMode = true;
+            break;
+        }
+    }
+
     // clear the force ending flag
     m_forceEnding = false;
 
@@ -1323,7 +1421,7 @@ beKA::beStatus beProgramBuilderOpenCL::Compile(const std::string& programSource,
         ss << "OpenCL Compile Error: clCreateProgramWithSource failed (" + GetCLErrorString(status) + ")." << endl;
         LogCallBack(ss.str());
 
-        retStatus =  beKA::beStatus_clCreateProgramWithSource_FAILED;
+        retStatus = beKA::beStatus_clCreateProgramWithSource_FAILED;
     }
     else
     {
@@ -1362,11 +1460,8 @@ beKA::beStatus beProgramBuilderOpenCL::Compile(const std::string& programSource,
             definesAndOptions += *it + " ";
         }
 
-        // -fbin-as, -fbin-amdil, and -fbin-source ask for extra sections.
         // We want these so that we can present them to the user.
         definesAndOptions += "-fbin-as -fbin-amdil -fbin-source";
-        // Debugging extras.  These only work with a debug OpenCL.
-        // definesAndOptions += "-fbin-as -fbin-amdil -fbin-source -save-temps -save-temps-all";
 
         // Which devices do we care about?
         vector<cl_device_id> requestedDevices;
@@ -1401,7 +1496,7 @@ beKA::beStatus beProgramBuilderOpenCL::Compile(const std::string& programSource,
 
         vector<cl_device_id>::iterator iterDeviceId = requestedDevices.begin();
 
-        for (int iCompilationNo = 0 ; iterDeviceId < requestedDevices.end(); iterDeviceId++, iCompilationNo++)
+        for (int iCompilationNo = 0; iterDeviceId < requestedDevices.end(); iterDeviceId++, iCompilationNo++)
         {
             if (m_forceEnding)
             {
@@ -1453,9 +1548,8 @@ beKA::beStatus beProgramBuilderOpenCL::Compile(const std::string& programSource,
             if (retStatus != beKA::beStatus_SUCCESS)
             {
                 std::stringstream sss;
-                sss << "...failed.\n";
-				sss << errString;
-				sss << endl << "--------" << endl;
+                sss << "failed.\n";
+                sss << errString;
                 LogCallBack(sss.str());
 
                 continue; //- don't try to get the analysis
@@ -1479,7 +1573,7 @@ beKA::beStatus beProgramBuilderOpenCL::Compile(const std::string& programSource,
                 size_t numKernels = pKernels.size();
                 std::map<std::string, beKA::AnalysisData> kernel_analysys;
 
-                for (size_t nKernel = 0 ; nKernel < numKernels ; nKernel++)
+                for (size_t nKernel = 0; nKernel < numKernels; nKernel++)
                 {
                     string kernel = (pKernels.at(nKernel));
                     beKA::AnalysisData ad;
@@ -1530,7 +1624,7 @@ beKA::beStatus beProgramBuilderOpenCL::CompileOpenCLInternal(const std::string& 
     if (!BuildOpenCLProgramWrapper(
             status,
             program,
-            (cl_uint) 1,
+            (cl_uint)1,
             &requestedDevices[0],
             definesAndOptions.c_str(),
             NULL,
@@ -1583,7 +1677,7 @@ beKA::beStatus beProgramBuilderOpenCL::CompileOpenCLInternal(const std::string& 
             // errString += "OpenCL Compile Error: ";
             // This string already ends with a newline.
             // Don't add another one after it.
-            errString += filteredBuildLog ;
+            errString += filteredBuildLog;
         }
     }
 
@@ -1645,7 +1739,7 @@ beKA::beStatus beProgramBuilderOpenCL::CompileOpenCLInternal(const std::string& 
 
     // we have only one
     size_t size = binarySizes[0];
-    binaries[0] = size ? new char[ binarySizes[0] ] : NULL;
+    binaries[0] = size ? new char[binarySizes[0]] : NULL;
 
 
     status = m_TheOpenCLModule.GetProgramInfo(
@@ -1657,7 +1751,7 @@ beKA::beStatus beProgramBuilderOpenCL::CompileOpenCLInternal(const std::string& 
 
     if (CL_SUCCESS != status)
     {
-        errString = "OpenCL Compile Error: clGetProgramInfo CL_PROGRAM_BINARIES failed (" + GetCLErrorString(status) + ").\n"  ;
+        errString = "OpenCL Compile Error: clGetProgramInfo CL_PROGRAM_BINARIES failed (" + GetCLErrorString(status) + ").\n";
     }
 
     if (binaries[0] != NULL)
@@ -1792,11 +1886,11 @@ void beProgramBuilderOpenCL::CalLoggerFunc(const CALchar* line)
 
 }
 
-void beProgramBuilderOpenCL::disassembleLogFunction(const char* msg, size_t size)
+void beProgramBuilderOpenCL::disassembleLogFunction(const char* pMsg, size_t size)
 {
     // For SI, deal with a bug where the ISA instructions all get passed together.
     // This really shouldn't be necessary, but it's easy enough to deal with.
-    string lineString(msg, size);
+    string lineString(pMsg, size);
 
     // Remove all carriage returns.
     lineString.erase(remove(lineString.begin(), lineString.end(), '\r'), lineString.end());
@@ -1808,7 +1902,16 @@ void beProgramBuilderOpenCL::disassembleLogFunction(const char* msg, size_t size
     }
 
     // And capture the string up to here.
-    (*s_pISAString) = lineString;
+    if (gs_DisassembleCounter == 0)
+    {
+        (*s_pISAString) = lineString;
+    }
+    else if (gs_DisassembleCounter == 1)
+    {
+        s_HSAILDisassembly = lineString;
+    }
+
+    gs_DisassembleCounter++;
 }
 
 
@@ -1880,7 +1983,7 @@ beStatus beProgramBuilderOpenCL::GetDeviceType(const std::string& deviceName, cl
 }
 
 
-beStatus beProgramBuilderOpenCL::GetDeviceTable(std::vector<GDT_GfxCardInfo>& table) const
+beStatus beProgramBuilderOpenCL::GetDeviceTable(std::vector<GDT_GfxCardInfo>& table)
 {
     table = m_OpenCLDeviceTable;
     return beStatus_SUCCESS;
@@ -1908,6 +2011,12 @@ void beProgramBuilderOpenCL::ForceEnd()
 {
     m_forceEnding = true;
 }
+
+void beProgramBuilderOpenCL::GetSupportedPublicDevices(std::set<std::string>& devices) const
+{
+    devices = m_DeviceNames;
+}
+
 double beProgramBuilderOpenCL::getOpenCLPlatformVersion()
 {
     // extract the version by the format, it should be in the (ver) in the end.
@@ -1939,11 +2048,11 @@ void beProgramBuilderOpenCL::RemoveNamesOfUnpublishedDevices(const set<string>& 
 #ifndef GR_BUILD_ACCESS
 #error GR_BUILD_ACCESS not defined!
 #endif
-#if (GR_BUILD_ACCESS == GR_NDA_ACCESS) || (GR_BUILD_ACCESS == GR_INTERNAL_ACCESS)
+#if (AMDT_BUILD_ACCESS == AMDT_NDA_ACCESS) || (AMDT_BUILD_ACCESS == AMDT_INTERNAL_ACCESS)
     // In NDA and INTERNAL versions this function is a no-op
     GT_UNREFERENCED_PARAMETER(uniqueNamesOfPublishedDevices); // unused
     return;
-#elif (GR_BUILD_ACCESS == GR_PUBLIC_ACCESS)
+#elif (AMDT_BUILD_ACCESS == AMDT_PUBLIC_ACCESS)
     // Take advantage of the fact that the m_OpenCLDeviceTable collection contains only published devices,
     // so we look for each name that the OpenCL driver provided in the table, and remove it if it is not found
 
@@ -1998,4 +2107,28 @@ void beProgramBuilderOpenCL::RemoveNamesOfUnpublishedDevices(const set<string>& 
 #else
 #error Unknown build access!
 #endif
+}
+
+bool beProgramBuilderOpenCL::DoesUseHsailPath(const std::string& deviceName) const
+{
+    bool retVal = false;
+    // HSAIL path is not used on Linux 32-bit regardless of driver version, hardware family
+#ifdef _LINUX
+#ifdef X86
+    retVal = false;
+    return retVal;
+#endif
+#endif
+
+    bool isSiFamily = false;
+
+    // HSAIL path is not used on SI hardware.
+    AMDTDeviceInfoUtils::Instance()->IsSIFamily(deviceName.c_str(), isSiFamily);
+
+    if (!isSiFamily)
+    {
+        retVal = true;
+    }
+
+    return retVal;
 }

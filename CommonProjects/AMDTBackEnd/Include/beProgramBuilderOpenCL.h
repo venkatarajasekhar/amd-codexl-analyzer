@@ -1,12 +1,9 @@
-//=====================================================================
-// Copyright 2016 (c), Advanced Micro Devices, Inc. All rights reserved.
-//
-/// \author AMD Developer Tools Team
-/// \file beProgramBuilderOpenCL.h 
-/// 
-//=====================================================================
 #ifndef _BEPROGRAMBUILDEROPENCL_H_
 #define _BEPROGRAMBUILDEROPENCL_H_
+
+// C++.
+#include <string>
+#include <sstream>
 
 #include "beProgramBuilder.h"
 
@@ -168,7 +165,7 @@ public:
     /// \param[out] table A place to leave a reference to the sorted table.
     /// \param[in]  kind  Which kind of table do we want?
     /// \returns          a status.
-    beKA::beStatus GetDeviceTable(std::vector<GDT_GfxCardInfo>& table) const;
+    beKA::beStatus GetDeviceTable(std::vector<GDT_GfxCardInfo>& table) override;
 
     /// Free the resources associated with a previous Compile.
     /// \param[in] program
@@ -179,6 +176,10 @@ public:
 
     /// force ending of the thread in a safe way:
     void ForceEnd();
+
+    /// Retrieves the names of the supported public devices, as exposed
+    /// by the OpenCL runtime.
+    void GetSupportedPublicDevices(std::set<std::string>& devices) const;
 
 protected:
     /// ctor.
@@ -254,6 +255,10 @@ private:
     /// This is done only in the CodeXL public version. In CodeXL NDA and INTERNAL versions this function is no-op.
     void RemoveNamesOfUnpublishedDevices(const set<string>& uniqueNamesOfPublishedDevices);
 
+    // Internal auxiliary function that determines if for a given device the HSAIL
+    // path would be used.
+    bool DoesUseHsailPath(const std::string& deviceName) const;
+
     /// The cracked binaries.
     std::vector<CElf*>           m_Elves;
 
@@ -271,8 +276,11 @@ private:
     /// Interface with OpenCL.dll/libOpenCL.so
     OpenCLModule                          m_TheOpenCLModule;
 
-    /// Interface with OCLCompiler.lib
-    ACLModule                             m_TheACLModule;
+    /// Handle to the ACL module.
+    ACLModule*                             m_pTheACLModule;
+
+    /// Handle to the ACL compiler.
+    aclCompiler*                           m_pTheACLCompiler;
 
     /// Interface with aticalcl.dll/libaticalcl.so
     CALCLModule                           m_TheCALCLModule;
@@ -295,7 +303,16 @@ private:
     std::string                           m_OpenCLVersionInfo;
 
     /// Temporary used to construct ISA string from OpenCL/CAL callback.
+    /// This member shouldn't be static. To be handled in a future cleanup.
     static std::string*                   s_pISAString;
+
+    /// Temporary used to construct IL string from OpenCL/CAL callback.
+    /// This member shouldn't be static. To be handled in a future cleanup.
+    static std::string                   s_HSAILDisassembly;
+
+    /// Counter used for the disassemble callback. It is being used by the callback
+    /// to differentiate between ISA and HSAIL disassembly.
+    static size_t gs_DisassembleCounter;
 
     /// Stream for diagnostic output.
     LoggingCallBackFuncP m_LogCallback;
@@ -315,6 +332,8 @@ private:
     bool m_IsIntialized;
 
     bool m_forceEnding;
+
+    bool m_isLegacyMode;
 };
 
 #endif // _BEPROGRAMBUILDEROPENCL_H_

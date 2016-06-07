@@ -1,11 +1,17 @@
-//=====================================================================
-// Copyright 2013-2016 (c), Advanced Micro Devices, Inc. All rights reserved.
+//=============================================================
+// Copyright (c) 2013 Advanced Micro Devices, Inc.
 //
-/// \author AMD Developer Tools Team
-/// \file ISAParser.cpp 
-/// \brief Description : Parser for the ISA
-/// 
-//=====================================================================
+/// \file   ISAParser.cpp
+/// \author GPU Developer Tools
+/// \version $Revision: $
+/// \brief Description: Parser for the ISA
+//
+//=============================================================
+// $Id: $
+// Last checkin:   $DateTime: $
+// Last edited by: $Author: $
+// Change list:    $Change: $
+//=============================================================
 
 // C++.
 #include <fstream>
@@ -81,7 +87,7 @@ static std::string trimStr(const std::string& strToTrim)
     return trimStart(trimEnd(ret));
 }
 
-// Split the given instruction into its building blocks: opcode, operands, binary represenatation and offset.
+// Split the given instruction into its building blocks: opcode, operands, binary representation and offset.
 static bool ExtractBuildingBlocks(const std::string& isaInstruction, std::string& instrOpCode,
                                   std::string& params, std::string& binaryRepresentation, std::string& offset)
 {
@@ -180,9 +186,9 @@ ParserISA::~ParserISA()
 }
 
 bool ParserISA::Parse(const std::string& isaLine, GDT_HW_GENERATION asicGen,
-                        Instruction::instruction32bit hexInstruction, bool isLiteral32b, 
-                        uint32_t literal32b, int iLabel /*=NO_LABEL*/,
-                        int iGotoLabel /*=NO_LABEL*/, int iLineCount/* = 0*/)
+                      Instruction::instruction32bit hexInstruction, bool isLiteral32b,
+                      uint32_t literal32b, int iLabel /*=NO_LABEL*/,
+                      int iGotoLabel /*=NO_LABEL*/, int iLineCount/* = 0*/)
 {
     bool ret = false;
     Instruction* pInstruction = NULL;
@@ -260,8 +266,8 @@ bool ParserISA::Parse(const std::string& isaLine, GDT_HW_GENERATION asicGen,
 }
 
 bool ParserISA::Parse(const std::string& isaLine, GDT_HW_GENERATION asicGen,
-                        Instruction::instruction64bit hexInstruction, int iLabel /*=NO_LABEL*/,
-                        int iGotoLabel /*=NO_LABEL*/, int iLineCount /*= 0*/)
+                      Instruction::instruction64bit hexInstruction, int iLabel /*=NO_LABEL*/,
+                      int iGotoLabel /*=NO_LABEL*/, int iLineCount /*= 0*/)
 {
     Instruction* pInstruction = NULL;
     /// Instruction encoding appears only in low 32 bits of instruction
@@ -434,10 +440,22 @@ bool ParserISA::ParseToVector(const std::string& isa)
         /// ISA "ends" with "; ----------------- CS Data ------------------------"
         isaEnd = "; ----------------- CS Data ------------------------";
 
+        // For Vulkan, we don't have the CS Data section.
+        if (isa.find(isaEnd) == std::string::npos)
+        {
+            isaEnd = "end";
+        }
+    }
+    else if (isa.find("&__OpenCL_") != std::string::npos)
+    {
+        // Shader entry point in HSAIL disassembly.
+        isaStart = "Disassembly for ";
+
+        // End of shader token in HSAIL disassembly.
+        isaEnd = "end";
     }
     else
     {
-
         // beginning of shader
         isaStart = "shader ";
 
@@ -461,7 +479,8 @@ bool ParserISA::ParseToVector(const std::string& isa)
         {
             isaCodeProc = true;
         }
-        else if (isaCodeProc && strstr(isaLine.c_str(), isaEnd.c_str()) != NULL)
+        else if (isaCodeProc && strstr(isaLine.c_str(), isaEnd.c_str()) != NULL
+                 && isaLine.find("//") == std::string::npos)
         {
             // at least one line of valid code detected
             gprProc = true;
@@ -545,7 +564,8 @@ bool ParserISA::ParseToVector(const std::string& isa)
             else if (iLabel != NO_LABEL)
             {
                 Instruction* pInstruction = nullptr;
-                pInstruction = new Instruction(isaLine);
+                std::string trimmedIsaLine = trimStr(isaLine);
+                pInstruction = new Instruction(trimmedIsaLine);
                 m_instructions.push_back(pInstruction);
                 iLabel = iGotoLabel = NO_LABEL;
             }
@@ -634,15 +654,21 @@ void ParserISA::ResetInstsCounters()
 
 }
 
-
 int ParserISA::GetLabel(const std::string& sISALine)
 {
     int iRet = NO_LABEL;
     int iLocation = (int)sISALine.find("label");
+    const int HSAIL_ISA_OFFSET = 2;
+    int offset = 0;
 
-    if (iLocation == 0)
+    if (iLocation == HSAIL_ISA_OFFSET)
     {
-        std::string labelText(sISALine.substr(6, sISALine.length() - 7));
+        offset = HSAIL_ISA_OFFSET;
+    }
+
+    if (iLocation == 0 || iLocation == HSAIL_ISA_OFFSET)
+    {
+        std::string labelText(sISALine.substr(6 + offset, sISALine.length() - 7));
         std::stringstream instStream;
         instStream << std::hex << labelText;
         instStream >> iRet;
@@ -654,9 +680,9 @@ int ParserISA::GetLabel(const std::string& sISALine)
 int ParserISA::GetGotoLabel(const std::string& sISALine)
 {
     int iRet = NO_LABEL;
-    int iLocation = (int)sISALine.find("label_");
+    size_t iLocation = (int)sISALine.find("label_");
 
-    if (iLocation > 0)
+    if (iLocation != std::string::npos)
     {
         std::string labelText(sISALine.substr(iLocation + 6, 4));
         std::stringstream instStream;
@@ -687,5 +713,63 @@ bool ParserISA::SplitIsaLine(const std::string& isaInstruction, std::string& ins
                              std::string& params, std::string& binaryRepresentation, std::string& offset) const
 {
     return ExtractBuildingBlocks(isaInstruction, instrOpCode, params, binaryRepresentation, offset);
+}
+
+bool ParserISA::ParseHsailStatistics(const std::string& hsailIsa, beKA::AnalysisData& stats)
+{
+    // Constants that are specific to this function's logic.
+    const std::string USED_SGPRS_TOKEN = " wavefront_sgpr_count";
+    const std::string USED_VGPRS_TOKEN = " workitem_vgpr_count";
+    const std::string WAVEFRONT_SIZE_TOKEN = " wavefront_size";
+    const std::string LDS_USED_BYTES_TOKEN = " workgroup_group_segment_byte_size";
+
+    // Reset the output buffer.
+    stats.numSGPRsUsed = 0;
+    stats.numVGPRsUsed = 0;
+    stats.wavefrontSize = 0;
+    stats.LDSSizeUsed = 0;
+
+    // Extract the values.
+    ExtractHsailIsaNumericValue(hsailIsa, USED_SGPRS_TOKEN, stats.numSGPRsUsed);
+    ExtractHsailIsaNumericValue(hsailIsa, USED_VGPRS_TOKEN, stats.numVGPRsUsed);
+    ExtractHsailIsaNumericValue(hsailIsa, WAVEFRONT_SIZE_TOKEN, stats.wavefrontSize);
+    ExtractHsailIsaNumericValue(hsailIsa, LDS_USED_BYTES_TOKEN, stats.LDSSizeUsed);
+
+    // Return true if we managed to successfully extract at least one value.
+    bool ret = (stats.wavefrontSize != 0 || stats.numSGPRsUsed != 0 || stats.numVGPRsUsed != 0 || stats.LDSSizeUsed != 0);
+    return ret;
+}
+
+void ParserISA::ExtractHsailIsaNumericValue(const std::string& hsailIsa, const std::string valueToken, CALuint64& valueBuffer)
+{
+    const std::string EQUALS_TOKEN = "= ";
+    size_t posBegin = hsailIsa.find(valueToken);
+
+    if (posBegin != std::string::npos)
+    {
+        posBegin = hsailIsa.find(EQUALS_TOKEN, posBegin);
+
+        if (posBegin != std::string::npos && posBegin < (hsailIsa.size() - 2))
+        {
+            // Advance the position to the actual value's begin index.
+            posBegin += 2;
+
+            // Extract the value as a string.
+            std::stringstream valueStream;
+
+            while (std::isdigit(hsailIsa[posBegin]))
+            {
+                valueStream << hsailIsa[posBegin++];
+            }
+
+            // Convert the string to a numerical integer value.
+            const std::string& valueStr = valueStream.str();
+
+            if (!valueStr.empty())
+            {
+                valueBuffer = std::stoi(valueStr);
+            }
+        }
+    }
 }
 

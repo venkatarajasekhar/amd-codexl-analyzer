@@ -1,22 +1,16 @@
+// -*- C++ -*-
 //=====================================================================
-// Copyright 2016 (c), Advanced Micro Devices, Inc. All rights reserved.
-//
-/// \author AMD Developer Tools Team
-/// \file 
-/// 
-//=====================================================================// -*- C++ -*-
-//=====================================================================
-// Copyright 2011-2016 (c), Advanced Micro Devices, Inc. All rights reserved.
+// Copyright 2011 Advanced Micro Devices, Inc. All rights reserved.
 //
 /// \author GPU Developer Tools
-/// \version $Revision: #2 $
+/// \version $Revision: #1 $
 /// \brief  The entry point for the KernelAnalyzer backend.
 //
 //=====================================================================
-// $Id: //devtools/branch/OpenSourceExp/CommonProjects/AMDTBackEnd/Include/beBackend.h#2 $
-// Last checkin:   $DateTime: 2016/01/05 12:05:29 $
-// Last edited by: $Author:  AMD Developer Tools Team
-// Change list:    $Change: 554012 $
+// $Id: //devtools/main/CodeXL/Components/ShaderAnalyzer/AMDTBackEnd/Include/beBackend.h#1 $
+// Last checkin:   $DateTime: 2016/02/28 16:32:28 $
+// Last edited by: $Author: igal $
+// Change list:    $Change: 561710 $
 //=====================================================================
 
 #ifndef _BACKEND_H_
@@ -130,11 +124,13 @@ public:
     /// clear the successful build devices list
     void ClearSuccessfulBuildDevicesList();
 
+    /// Extract the list of supported, public, devices
+    /// \param devices a set to be populated with the supported device names
+    /// \returns true for success, false otherwise
+    bool GetSupportedPublicDevices(std::set<std::string>& devices);
+
 #ifdef _WIN32
     beProgramBuilderDX* theOpenDXBuilder();
-
-    /// Attempt to read the driver version from the registry key. Return FALSE if the key does not exist
-    bool GetDriverVersionFromRegistryKey(const std::wstring& registryKey, std::wstring& driverVersion, bool& branchExist);
 
     /// Adds a directory to the list of custom directories where
     /// the backend would search for the DX binaries.
@@ -157,6 +153,8 @@ private:
     // This vector will hold additional directories
     // where DX binaries should be searched (e.g. D3D default compiler).
     static std::vector<std::string> m_customDxLoadPaths;
+
+    std::set<std::string> m_supportedPublicDevices;
 
 #ifdef _WIN32
     beProgramBuilderDX* m_beDX;

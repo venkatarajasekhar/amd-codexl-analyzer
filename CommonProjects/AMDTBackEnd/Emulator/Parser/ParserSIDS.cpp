@@ -1,15 +1,15 @@
 //=============================================================
-/// Copyright 2013-2016 (c), Advanced Micro Devices, Inc. All rights reserved.
-///
-/// \author AMD Developer Tools Team
+// Copyright (c) 2013 Advanced Micro Devices, Inc.
+//
 /// \file   ParserSIDS.cpp
+/// \author GPU Developer Tools
 /// \version $Revision: #7 $
 /// \brief Description: Parser for DS (Local and global data share instructions)SI Instruction.
 //
 //=============================================================
 // $Id: //devtools/main/CodeXL/Components/KernelAnalyzer/AMDTKernelAnalyzer/src/Emulator/Parser/ParserSIDS.cpp#7 $
 // Last checkin:   $DateTime: 2015/05/10 04:38:55 $
-// Last edited by: $Author:  AMD Developer Tools Team
+// Last edited by: $Author: abenmos $
 // Change list:    $Change: 526865 $
 //=============================================================
 

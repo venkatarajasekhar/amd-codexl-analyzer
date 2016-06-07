@@ -1,11 +1,3 @@
-//=====================================================================
-// Copyright 2013-2016 (c), Advanced Micro Devices, Inc. All rights reserved.
-//
-/// \author AMD Developer Tools Team
-/// \file 
-/// 
-//=====================================================================
-
 /*****************************************************************************\
 *
 *  Module Name    cz_id.h
@@ -13,6 +5,14 @@
 *  Devices        CARRIZO
 *
 *  Description    Defining Device IDs, ASIC revision IDs for CARRIZO
+*
+*
+*  (c) 2013 Advanced Micro Devices, Inc. (unpublished)
+*
+*  All rights reserved.  This notice is intended as a precaution against
+*  inadvertent publication and does not imply publication or any waiver
+*  of confidentiality.  The year included in the foregoing notice is the
+*  year of creation of the work.
 *
 \*****************************************************************************/
 

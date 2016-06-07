@@ -1,10 +1,3 @@
-//=====================================================================
-// Copyright 2011-2016 (c), Advanced Micro Devices, Inc. All rights reserved.
-//
-/// \author AMD Developer Tools Team
-/// \file 
-/// 
-//=====================================================================
 /*****************************************************************************\
 *
 *  Module Name    kv_id.h
@@ -12,9 +5,18 @@
 *  Device         Spectre, Spooky, KALINDI
 *
 *  Description    Identifier file for Kaveri and Kabini driver
+*
+*
+*  (c) 2011 AMD (unpublished)
+*
+*  All rights reserved.  This notice is intended as a precaution against
+*  inadvertent publication and does not imply publication or any waiver
+*  of confidentiality.  The year included in the foregoing notice is the
+*  year of creation of the work.
+*
 *  LOG OF CHANGES
 *
-*  0.1    07/27/11 - initial revision
+*  0.1    07/27/11 [szhao] - initial revision
 *
 \*****************************************************************************/
 

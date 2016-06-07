@@ -1,10 +1,3 @@
-//=====================================================================
-// Copyright 2016 (c), Advanced Micro Devices, Inc. All rights reserved.
-//
-/// \author AMD Developer Tools Team
-/// \file beProgramBuilderDX.cpp 
-/// 
-//=====================================================================
 #include <CElf.h>
 
 // C++.
@@ -53,7 +46,7 @@ const char* DEVICE_NAME_ICELAND  = "Iceland";
 // This function returns true if the given device is
 // affected by the HW issue which forces an allocation of
 // a fixed number of SGPRs.
-static bool IsFixedSgprAlloc(const std::string& deviceName)
+static bool IsFixedSgprAlloc(const string& deviceName)
 {
     // DX only: due to a HW bug, SGPR allocation for
     // Tonga and Iceland devices should be fixed (94 prior to
@@ -97,7 +90,7 @@ beProgramBuilderDX::~beProgramBuilderDX(void)
     m_TheAMDDXXModule.UnloadModule();
 }
 
-beKA::beStatus beProgramBuilderDX::Initialize(const std::string& dxModuleToLoad/* = ""*/)
+beKA::beStatus beProgramBuilderDX::Initialize(const string& dxModuleToLoad/* = ""*/)
 {
     beStatus beRet = beStatus_SUCCESS;
 
@@ -134,7 +127,7 @@ beKA::beStatus beProgramBuilderDX::Initialize(const std::string& dxModuleToLoad/
         {
             // Check if the additional search paths should be searched.
             bool shouldSearchAdditionalPaths = !isDllLoad &&
-                                               (dxModuleToLoad.find(D3DCompileModule::s_DefaultModuleName) != std::string::npos);
+                                               (dxModuleToLoad.find(D3DCompileModule::s_DefaultModuleName) != string::npos);
 
             if (shouldSearchAdditionalPaths)
             {
@@ -142,7 +135,7 @@ beKA::beStatus beProgramBuilderDX::Initialize(const std::string& dxModuleToLoad/
                 moduleNameAsGtStr << D3DCompileModule::s_DefaultModuleName;
 
                 // Try searching in the additional directories (if any).
-                for (const std::string& path : m_loaderSearchDirectories)
+                for (const string& path : m_loaderSearchDirectories)
                 {
                     // Build the full path to the module.
                     gtString pathAsGtStr;
@@ -195,33 +188,21 @@ beKA::beStatus beProgramBuilderDX::Initialize(const std::string& dxModuleToLoad/
         }
     }
 
-    // get asic list since we need it for every command, continue only if manage to load modules
     if (beRet == beStatus_SUCCESS)
     {
-        // TODO: the asicInfoList is not used anywhere after being retrieved. Is this actually needed?  If not, suggest removing the next two lines
-        AsicInfoList asicInfoList;
-        AMDTADLUtils::Instance()->GetAsicInfoList(asicInfoList);
-
-        // Populate the sorted device (card) info table.
+        // Go through the list of public devices, as received from the OpenCL runtime.
         std::vector<GDT_GfxCardInfo> cardList;
 
-        // DX support now only SI, CI and VI
-        if (AMDTDeviceInfoUtils::Instance()->GetAllCardsInHardwareGeneration(GDT_HW_GENERATION_SOUTHERNISLAND, cardList))
+        for (const std::string& publicDevice : m_publicDeviceNames)
         {
-            m_DXDeviceTable.insert(m_DXDeviceTable.end(), cardList.begin(), cardList.end());
+            if (AMDTDeviceInfoUtils::Instance()->GetDeviceInfo(publicDevice.c_str(), cardList))
+            {
+                m_DXDeviceTable.insert(m_DXDeviceTable.end(), cardList.begin(), cardList.end());
+                cardList.clear();
+            }
         }
 
-        if (AMDTDeviceInfoUtils::Instance()->GetAllCardsInHardwareGeneration(GDT_HW_GENERATION_SEAISLAND, cardList))
-        {
-            m_DXDeviceTable.insert(m_DXDeviceTable.end(), cardList.begin(), cardList.end());
-        }
-
-        if (AMDTDeviceInfoUtils::Instance()->GetAllCardsInHardwareGeneration(GDT_HW_GENERATION_VOLCANICISLAND, cardList))
-        {
-            m_DXDeviceTable.insert(m_DXDeviceTable.end(), cardList.begin(), cardList.end());
-        }
-
-        sort(m_DXDeviceTable.begin(), m_DXDeviceTable.end(), beUtils::GfxCardInfoSortPredicate);
+        std::sort(m_DXDeviceTable.begin(), m_DXDeviceTable.end(), beUtils::GfxCardInfoSortPredicate);
     }
 
     if (beRet == beStatus_SUCCESS)
@@ -232,7 +213,7 @@ beKA::beStatus beProgramBuilderDX::Initialize(const std::string& dxModuleToLoad/
     return beRet;
 }
 
-beKA::beStatus beProgramBuilderDX::CompileHLSL(const std::string& programSource, const DXOptions& dxOptions)
+beKA::beStatus beProgramBuilderDX::CompileHLSL(const string& programSource, const DXOptions& dxOptions)
 {
     // Turn options.m_Defines into what D3DCompile expects.
     D3D_SHADER_MACRO* macros = new D3D_SHADER_MACRO[dxOptions.m_defines.size() + 1];
@@ -243,6 +224,7 @@ beKA::beStatus beProgramBuilderDX::CompileHLSL(const std::string& programSource,
     if (!dxOptions.m_defines.empty())
     {
         int i = 0;
+
         for (vector<pair<string, string> >::const_iterator it = dxOptions.m_defines.begin();
              it != dxOptions.m_defines.end();
              ++it, i++)
@@ -313,7 +295,7 @@ beKA::beStatus beProgramBuilderDX::CompileHLSL(const std::string& programSource,
         char* errorString = (char*)pErrorMsgs->GetBufferPointer();
         size_t error_size = pErrorMsgs->GetBufferSize();
         stringstream ss;
-        ss << std::string(errorString, error_size);
+        ss << string(errorString, error_size);
         LogCallBack(ss.str());
         pErrorMsgs->Release();
     }
@@ -348,7 +330,7 @@ beKA::beStatus beProgramBuilderDX::CompileHLSL(const std::string& programSource,
         {
             shaderBytes = (char*)pDisassembly->GetBufferPointer();
             shaderBytesLen = pDisassembly->GetBufferSize();
-            m_msIntermediateText = std::string(shaderBytes, shaderBytesLen);
+            m_msIntermediateText = string(shaderBytes, shaderBytesLen);
         }
         else
         {
@@ -361,7 +343,7 @@ beKA::beStatus beProgramBuilderDX::CompileHLSL(const std::string& programSource,
 
 }
 
-beKA::beStatus beProgramBuilderDX::CompileDXAsm(const std::string& programSource, const DXOptions& dxOptions)
+beKA::beStatus beProgramBuilderDX::CompileDXAsm(const string& programSource, const DXOptions& dxOptions)
 {
     // check if valid Blob first!
     D3D10_ShaderObjectHeader* pShaderHeader = (D3D10_ShaderObjectHeader*)programSource.c_str();
@@ -430,7 +412,7 @@ beKA::beStatus beProgramBuilderDX::CompileDXAsm(const std::string& programSource
 
     if (pCurrElf->good())
     {
-        SetDeviceElf(dxOptions.m_deviceName, pCurrElf);
+        SetDeviceElf(dxOptions.m_deviceName, shaderOutput);
     }
     else
     {
@@ -451,7 +433,7 @@ beKA::beStatus beProgramBuilderDX::CompileDXAsm(const std::string& programSource
     return beStatus_SUCCESS;
 }
 
-beKA::beStatus beProgramBuilderDX::Compile(beKA::SourceLanguage sourceLanguage, const std::string& programSource, const DXOptions& dxOptions)
+beKA::beStatus beProgramBuilderDX::Compile(beKA::SourceLanguage sourceLanguage, const string& programSource, const DXOptions& dxOptions)
 {
     if (!m_bIsInitialized)
     {
@@ -485,7 +467,7 @@ beKA::beStatus beProgramBuilderDX::Compile(beKA::SourceLanguage sourceLanguage, 
     return beRet;
 }
 
-beKA::beStatus beProgramBuilderDX::GetKernels(const std::string& device, std::vector<std::string>& kernels)
+beKA::beStatus beProgramBuilderDX::GetKernels(const string& device, vector<string>& kernels)
 {
     (void)(&device); // Unreferenced parameter
     (void)(&kernels); // Unreferenced parameter
@@ -493,16 +475,32 @@ beKA::beStatus beProgramBuilderDX::GetKernels(const std::string& device, std::ve
     return beKA::beStatus_SUCCESS;
 }
 
-beKA::beStatus beProgramBuilderDX::GetBinary(const std::string& device, const beKA::BinaryOptions& binopts, std::vector<char>& binary)
+beKA::beStatus beProgramBuilderDX::GetBinary(const string& device, const beKA::BinaryOptions& binopts, vector<char>& binary)
 {
-    (void)(&device); // Unreferenced parameter
-    (void)(&binopts); // Unreferenced parameter
-    (void)(&binary); // Unreferenced parameter
+
+    GT_UNREFERENCED_PARAMETER(binopts);
+    binary = GetDeviceBinaryElf(device);
 
     return beKA::beStatus_SUCCESS;
 }
 
-beKA::beStatus beProgramBuilderDX::GetKernelILText(const std::string& device, const std::string& kernel, std::string& il)
+
+beKA::beStatus beProgramBuilderDX::GetISABinary(const string& device, vector<char>& binary)
+{
+    const CElfSection* pTextSection = GetISATextSection(device);
+    beStatus result = beStatus_Invalid;
+
+    if (nullptr != pTextSection)
+    {
+        result = beStatus_SUCCESS;
+        binary = pTextSection->GetData();
+    }
+
+    return result;
+
+}
+
+beKA::beStatus beProgramBuilderDX::GetKernelILText(const string& device, const string& kernel, string& il)
 {
     // For DX shaders, we currently cannot disassemble the IL binary section.
     // For now, we extract D3D ASM code.
@@ -513,7 +511,7 @@ beKA::beStatus beProgramBuilderDX::GetKernelILText(const std::string& device, co
     return beRet;
 }
 
-beKA::beStatus beProgramBuilderDX::GetKernelISAText(const std::string& device, const std::string& shaderName, std::string& isa)
+beKA::beStatus beProgramBuilderDX::GetKernelISAText(const string& device, const string& shaderName, string& isa)
 {
     // Not implemented: see beProgramBuilderDX::GetDxShaderD3DASM.
     // The current inheritance architecture where beProgramBuilderDX and
@@ -526,7 +524,7 @@ beKA::beStatus beProgramBuilderDX::GetKernelISAText(const std::string& device, c
     return beStatus_Invalid;
 }
 
-beKA::beStatus beProgramBuilderDX::GetStatistics(const std::string& device, const std::string& kernel, beKA::AnalysisData& analysis)
+beKA::beStatus beProgramBuilderDX::GetStatistics(const string& device, const string& kernel, beKA::AnalysisData& analysis)
 {
     GT_UNREFERENCED_PARAMETER(kernel);
 
@@ -597,8 +595,10 @@ void beProgramBuilderDX::ClearFormerBuildOutputs()
     // Clear the ELF sections.
     for (auto& devElfPair : m_compiledElf)
     {
-        delete devElfPair.second;
-        devElfPair.second = nullptr;
+        CelfBinaryPair& celfCelfBinaryPair = devElfPair.second;
+        delete celfCelfBinaryPair.first;
+        celfCelfBinaryPair.first = nullptr;
+        celfCelfBinaryPair.second.clear();
     }
 
     m_compiledElf.clear();
@@ -612,13 +612,13 @@ void beProgramBuilderDX::ReleaseProgram()
     ClearFormerBuildOutputs();
 }
 
-beKA::beStatus beProgramBuilderDX::GetDeviceTable(std::vector<GDT_GfxCardInfo>& table) const
+beKA::beStatus beProgramBuilderDX::GetDeviceTable(vector<GDT_GfxCardInfo>& table)
 {
     table = m_DXDeviceTable;
     return beStatus_SUCCESS;
 }
 
-bool beProgramBuilderDX::CompileOK(std::string& device)
+bool beProgramBuilderDX::CompileOK(string& device)
 {
     (void)(&device); // Unreferenced parameter
 
@@ -634,15 +634,15 @@ static bool g_bWroteFiles = false;
 bool g_bSHDR = false;
 unsigned long dwSHDRToken = 0x52444853; /* "SHDR" */
 bool g_bBinIsHex = false;
-static std::string g_szTxtFile;
-static std::string g_szBinFile;
-static std::string g_szFullBinFile;
-static std::string g_szRegFile;
-static std::string g_szHexFile;
-static std::string g_szFullHexFile;
-static std::string g_szConversion;
-static std::string test_asm;
-static std::string test_hlsl;
+static string g_szTxtFile;
+static string g_szBinFile;
+static string g_szFullBinFile;
+static string g_szRegFile;
+static string g_szHexFile;
+static string g_szFullHexFile;
+static string g_szConversion;
+static string test_asm;
+static string test_hlsl;
 static int g_hlsl_flag = 0;
 bool g_bNoDebug = false;
 
@@ -717,9 +717,9 @@ int XLT_STDCALL outputBinary(XLT_PVOID pHandle,
     // output.save( g_szDstFile.c_str() );
     if ((nTranslatedProgramSize != 0) && (pszTranslatedProgram != NULL))
     {
-        std::ofstream ofs;
+        ofstream ofs;
 
-        ofs.open(g_szBinFile.c_str(), std::ios::binary | std::ios::out);
+        ofs.open(g_szBinFile.c_str(), ios::binary | ios::out);
 
         if (!ofs.is_open())
         {
@@ -761,7 +761,7 @@ int XLT_STDCALL outputBinary(XLT_PVOID pHandle,
     }//end if else
 }
 
-std::string* beProgramBuilderDX::s_pTranslatedProgram;
+string* beProgramBuilderDX::s_pTranslatedProgram;
 int* beProgramBuilderDX::s_pipTranslatedProgramSize;
 
 int XLT_STDCALL outputBinaryFull(XLT_PVOID pHandle,
@@ -808,9 +808,9 @@ int XLT_STDCALL outputBinaryFull(XLT_PVOID pHandle,
     {
         if (!g_szFullBinFile.empty())
         {
-            std::ofstream ofs;
+            ofstream ofs;
 
-            ofs.open(g_szFullBinFile.c_str(), std::ios::binary | std::ios::out);
+            ofs.open(g_szFullBinFile.c_str(), ios::binary | ios::out);
 
             if (!ofs.is_open())
             {
@@ -829,9 +829,9 @@ int XLT_STDCALL outputBinaryFull(XLT_PVOID pHandle,
 
         if (!g_szFullHexFile.empty())
         {
-            std::ofstream ofs;
+            ofstream ofs;
 
-            ofs.open(g_szFullHexFile.c_str(), std::ios::binary | std::ios::out);
+            ofs.open(g_szFullHexFile.c_str(), ios::binary | ios::out);
 
             if (!ofs.is_open())
             {
@@ -875,7 +875,7 @@ int XLT_STDCALL outputBinaryFull(XLT_PVOID pHandle,
 /// end callbacks
 
 
-beKA::beStatus beProgramBuilderDX::CompileDXAsmT(const std::string& programSource, const DXOptions& dxOptions)
+beKA::beStatus beProgramBuilderDX::CompileDXAsmT(const string& programSource, const DXOptions& dxOptions)
 {
     // lets convert the source, which is DX ASM as text to DX ASM binary which is what DX driver expects.
     XLT_PROGINFO xltInput;
@@ -951,7 +951,7 @@ beKA::beStatus beProgramBuilderDX::CompileDXAsmT(const std::string& programSourc
     if (pElf->good())
     {
         // Store the ELF section in the relevant container.
-        SetDeviceElf(dxOptions.m_deviceName, pElf);
+        SetDeviceElf(dxOptions.m_deviceName, shaderOutput);
     }
     else
     {
@@ -973,55 +973,55 @@ beKA::beStatus beProgramBuilderDX::CompileDXAsmT(const std::string& programSourc
 
 }
 
-beKA::beStatus beProgramBuilderDX::GetIntermediateMSBlob(std::string& IntermediateMDBlob)
+beKA::beStatus beProgramBuilderDX::GetIntermediateMSBlob(string& IntermediateMDBlob)
 {
     IntermediateMDBlob = m_msIntermediateText;
     return beStatus_SUCCESS;
 }
 
-void beProgramBuilderDX::SetIntermediateMSBlob(const std::string& intermediateMSCode)
+void beProgramBuilderDX::SetIntermediateMSBlob(const string& intermediateMSCode)
 {
     m_msIntermediateText = intermediateMSCode;
 }
 
-void beProgramBuilderDX::AddDxSearchDir(const std::string& dir)
+void beProgramBuilderDX::AddDxSearchDir(const string& dir)
 {
-    if (std::find(m_loaderSearchDirectories.begin(),
-                  m_loaderSearchDirectories.end(), dir) == m_loaderSearchDirectories.end())
+    if (find(m_loaderSearchDirectories.begin(),
+             m_loaderSearchDirectories.end(), dir) == m_loaderSearchDirectories.end())
     {
         m_loaderSearchDirectories.push_back(dir);
     }
 }
 
-static int GetShaderType(const std::string& target)
+static int GetShaderType(const string& target)
 {
     int shaderType = SP3_SHTYPE_NONE;
 
-    if (target.compare("ps_") != std::string::npos)
+    if (target.compare("ps_") != string::npos)
     {
         shaderType = SP3_SHTYPE_PS;
     }
-    else if (target.compare("vs_") != std::string::npos)
+    else if (target.compare("vs_") != string::npos)
     {
         shaderType = SP3_SHTYPE_VS;
     }
-    else if (target.compare("cs_") != std::string::npos)
+    else if (target.compare("cs_") != string::npos)
     {
         shaderType = SP3_SHTYPE_CS;
     }
-    else if (target.compare("gs_") != std::string::npos)
+    else if (target.compare("gs_") != string::npos)
     {
         shaderType = SP3_SHTYPE_GS;
     }
-    else if (target.compare("es_") != std::string::npos)
+    else if (target.compare("es_") != string::npos)
     {
         shaderType = SP3_SHTYPE_ES;
     }
-    else if (target.compare("hs_") != std::string::npos)
+    else if (target.compare("hs_") != string::npos)
     {
         shaderType = SP3_SHTYPE_HS;
     }
-    else if (target.compare("ls_") != std::string::npos)
+    else if (target.compare("ls_") != string::npos)
     {
         shaderType = SP3_SHTYPE_LS;
     }
@@ -1029,96 +1029,122 @@ static int GetShaderType(const std::string& target)
     return shaderType;
 }
 
-beKA::beStatus beProgramBuilderDX::GetDxShaderISAText(const std::string& deviceName, const std::string& shader, const std::string& target, std::string& isaBuffer)
+const CElfSection* beProgramBuilderDX::GetISATextSection(const string& deviceName) const
 {
-    beKA::beStatus ret = beStatus_Invalid;
-
     // Get the relevant ELF section for the required device.
+    const CElfSection* result = nullptr;
     CElf* pElf = GetDeviceElf(deviceName);
 
     if (pElf != nullptr)
     {
         // There is no symbol table.  We just need the .text section.
-        const std::string CODE_SECTION_NAME(".text");
-        const CElfSection* pTextSection = pElf->GetSection(CODE_SECTION_NAME);
-
-        if (pTextSection != nullptr)
-        {
-            // This is the binary image.
-            const vector<char>& sectionData = pTextSection->GetData();
-
-            // Use the sp3 library to do the disassembly.
-            // This only works with SI & CI for now.
-            // See on that matter: sc/Src/R1000/R1000Disassembler.cpp.
-            struct sp3_context* pDisasmState = sp3_new();
-            char* pDisassembledShader = nullptr;
-            sp3_vma* pVm = nullptr;
-
-            // Set the hardware generation.
-            for (const GDT_GfxCardInfo& cardInfo : m_DXDeviceTable)
-            {
-                if (cardInfo.m_szCALName == deviceName)
-                {
-                    switch (cardInfo.m_generation)
-                    {
-                        case GDT_HW_GENERATION_SOUTHERNISLAND:
-                            sp3_setasic(pDisasmState, "SI");
-                            break;
-
-                        case GDT_HW_GENERATION_SEAISLAND:
-                            sp3_setasic(pDisasmState, "CI");
-                            break;
-
-                        case GDT_HW_GENERATION_VOLCANICISLAND:
-                            sp3_setasic(pDisasmState, "VI");
-                            break;
-
-                        default:
-                            // Should not happen.
-                            GT_ASSERT_EX(false, L"Unknown HW generation.");
-                            sp3_setasic(pDisasmState, "SI");
-                            break;
-                    }
-                }
-            }
-
-            // Prepare the tokens.
-            unsigned* pIsaTokens = (unsigned*)&sectionData[0];
-
-            if (pIsaTokens != nullptr)
-            {
-                size_t isaTokensLen = sectionData.size() / 4;
-                pVm = sp3_vm_new_ptr(0, isaTokensLen, pIsaTokens);
-
-                // Prepare the flags.
-                unsigned disasmFlags = 0;
-                disasmFlags |= SP3DIS_FORCEVALID;
-
-                // Get the shader type.
-                const int shaderType = GetShaderType(target);
-
-                // Disassemble the code.
-                pDisassembledShader = sp3_disasm(pDisasmState, pVm, 0, shader.c_str(),
-                                                 shaderType, NULL, (unsigned)isaTokensLen, disasmFlags);
-
-                if (pDisassembledShader != nullptr)
-                {
-
-                    // Fill the buffer.
-                    isaBuffer = string(pDisassembledShader);
-
-                    // We are done.
-                    ret = beKA::beStatus_SUCCESS;
-                }
-            }
-
-            // Release the memory.
-            sp3_close(pDisasmState);
-            UsePlatformNativeLineEndings(isaBuffer);
-            sp3_free(pDisassembledShader);
-            sp3_vm_free(pVm);
-        }
+        const string CODE_SECTION_NAME(".text");
+        result = pElf->GetSection(CODE_SECTION_NAME);
     }
+
+    return result;
+}
+
+const CElfSection* beProgramBuilderDX::GetILSection(const std::string& deviceName) const
+{
+    // Get the relevant ELF section for the required device.
+    const CElfSection* result = nullptr;
+    CElf* pElf = GetDeviceElf(deviceName);
+
+    if (pElf != nullptr)
+    {
+        // There is no symbol table.  We just need the .text section.
+        const string IL_SECTION_NAME(".amdil");
+        result = pElf->GetSection(IL_SECTION_NAME);
+    }
+
+    return result;
+}
+
+beKA::beStatus beProgramBuilderDX::GetDxShaderISAText(const string& deviceName, const string& shader, const string& target, string& isaBuffer)
+{
+    beKA::beStatus ret = beStatus_Invalid;
+
+    // Get the relevant ELF section for the required device.
+    const CElfSection* pTextSection = GetISATextSection(deviceName);
+
+    if (pTextSection != nullptr)
+    {
+        // This is the binary image.
+        const vector<char>& sectionData = pTextSection->GetData();
+
+        // Use the sp3 library to do the disassembly.
+        // This only works with SI & CI for now.
+        // See on that matter: sc/Src/R1000/R1000Disassembler.cpp.
+        struct sp3_context* pDisasmState = sp3_new();
+        char* pDisassembledShader = nullptr;
+        sp3_vma* pVm = nullptr;
+
+        // Set the hardware generation.
+        for (const GDT_GfxCardInfo& cardInfo : m_DXDeviceTable)
+        {
+            if (cardInfo.m_szCALName == deviceName)
+            {
+                switch (cardInfo.m_generation)
+                {
+                    case GDT_HW_GENERATION_SOUTHERNISLAND:
+                        sp3_setasic(pDisasmState, "SI");
+                        break;
+
+                    case GDT_HW_GENERATION_SEAISLAND:
+                        sp3_setasic(pDisasmState, "CI");
+                        break;
+
+                    case GDT_HW_GENERATION_VOLCANICISLAND:
+                        sp3_setasic(pDisasmState, "VI");
+                        break;
+
+                    default:
+                        // Should not happen.
+                        GT_ASSERT_EX(false, L"Unknown HW generation.");
+                        sp3_setasic(pDisasmState, "SI");
+                        break;
+                }
+            }
+        }
+
+        // Prepare the tokens.
+        unsigned* pIsaTokens = (unsigned*)&sectionData[0];
+
+        if (pIsaTokens != nullptr)
+        {
+            size_t isaTokensLen = sectionData.size() / 4;
+            pVm = sp3_vm_new_ptr(0, isaTokensLen, pIsaTokens);
+
+            // Prepare the flags.
+            unsigned disasmFlags = 0;
+            disasmFlags |= SP3DIS_FORCEVALID;
+
+            // Get the shader type.
+            const int shaderType = GetShaderType(target);
+
+            // Disassemble the code.
+            pDisassembledShader = sp3_disasm(pDisasmState, pVm, 0, shader.c_str(),
+                                             shaderType, NULL, (unsigned)isaTokensLen, disasmFlags);
+
+            if (pDisassembledShader != nullptr)
+            {
+
+                // Fill the buffer.
+                isaBuffer = string(pDisassembledShader);
+
+                // We are done.
+                ret = beKA::beStatus_SUCCESS;
+            }
+        }
+
+        // Release the memory.
+        sp3_close(pDisasmState);
+        UsePlatformNativeLineEndings(isaBuffer);
+        sp3_free(pDisassembledShader);
+        sp3_vm_free(pVm);
+    }
+
     else
     {
         ret = beStatus_NO_ISA_FOR_DEVICE;
@@ -1127,7 +1153,72 @@ beKA::beStatus beProgramBuilderDX::GetDxShaderISAText(const std::string& deviceN
     return ret;
 }
 
-bool beProgramBuilderDX::GetIsaSize(const std::string& isaAsText, size_t& sizeInBytes) const
+beKA::beStatus beProgramBuilderDX::GetDxShaderIL(const std::string& device, const std::string& shader,
+    const std::string& target, std::string& ilBuffer)
+{
+    beKA::beStatus ret = beStatus_Invalid;
+
+    // Get the relevant ELF section for the required device.
+    const CElfSection* pAmdilSection = GetILSection(device);
+
+    if (pAmdilSection != nullptr)
+    {
+        // This is the binary image.
+        const vector<char>& sectionData = pAmdilSection->GetData();
+
+        // Use the sp3 library to do the disassembly.
+        // This only works with SI & CI for now.
+        // See on that matter: sc/Src/R1000/R1000Disassembler.cpp.
+        struct sp3_context* pDisasmState = sp3_new();
+        char* pDisassembledShader = nullptr;
+        sp3_vma* pVm = nullptr;
+
+        // Prepare the tokens.
+        unsigned* pIlBytes = (unsigned*)&sectionData[0];
+
+        if (pIlBytes != nullptr)
+        {
+            size_t ilBytesLen = sectionData.size() / 4;
+            pVm = sp3_vm_new_ptr(0, ilBytesLen, pIlBytes);
+
+            // Prepare the flags.
+            unsigned disasmFlags = 0;
+            disasmFlags |= SP3DIS_FORCEVALID;
+
+            // Get the shader type.
+            const int shaderType = GetShaderType(target);
+
+            // Disassemble the code.
+            pDisassembledShader = sp3_disasm(pDisasmState, pVm, 0, shader.c_str(),
+                shaderType, NULL, (unsigned)ilBytesLen, disasmFlags);
+
+            if (pDisassembledShader != nullptr)
+            {
+
+                // Fill the buffer.
+                ilBuffer = string(pDisassembledShader);
+
+                // We are done.
+                ret = beKA::beStatus_SUCCESS;
+            }
+        }
+
+        // Release the memory.
+        sp3_close(pDisasmState);
+        UsePlatformNativeLineEndings(ilBuffer);
+        sp3_free(pDisassembledShader);
+        sp3_vm_free(pVm);
+    }
+
+    else
+    {
+        ret = beStatus_NO_ISA_FOR_DEVICE;
+    }
+
+    return ret;
+}
+
+bool beProgramBuilderDX::GetIsaSize(const string& isaAsText, size_t& sizeInBytes) const
 {
     // The length in characters of a 32-bit instruction in text format.
     const size_t INSTRUCTION_32_LENGTH = 8;
@@ -1142,7 +1233,7 @@ bool beProgramBuilderDX::GetIsaSize(const std::string& isaAsText, size_t& sizeIn
 
     size_t posBegin = isaAsText.rfind("//");
 
-    if (posBegin != std::string::npos)
+    if (posBegin != string::npos)
     {
         size_t posFirst32BitEnd = isaAsText.find(':', posBegin);
 
@@ -1152,17 +1243,17 @@ bool beProgramBuilderDX::GetIsaSize(const std::string& isaAsText, size_t& sizeIn
         // Determine the length of the PC string.
         size_t pcLength = (posFirst32BitEnd - posBegin);
 
-        if (posFirst32BitEnd != std::string::npos &&  pcLength > 0)
+        if (posFirst32BitEnd != string::npos &&  pcLength > 0)
         {
             GT_IF_WITH_ASSERT(posBegin + pcLength < isaAsText.size())
             {
                 // Get the first 32 bit of the final instruction.
-                const std::string& instrFirst32bit = isaAsText.substr(posBegin, pcLength);
+                const string& instrFirst32bit = isaAsText.substr(posBegin, pcLength);
 
                 // Convert the PC of the final instruction. This will indicate
                 // how many bytes we used until the final instruction (excluding
                 // the final instruction).
-                sizeInBytes = std::stoul(instrFirst32bit, nullptr, 16);
+                sizeInBytes = stoul(instrFirst32bit, nullptr, 16);
 
                 // Get past the prefix.
                 posFirst32BitEnd += 2;
@@ -1170,10 +1261,10 @@ bool beProgramBuilderDX::GetIsaSize(const std::string& isaAsText, size_t& sizeIn
                 // Find the end of the final instruction line.
                 size_t posEnd = isaAsText.find("\r\n", posBegin);
 
-                if (posEnd != std::string::npos && posFirst32BitEnd < posEnd)
+                if (posEnd != string::npos && posFirst32BitEnd < posEnd)
                 {
                     // Extract the final instruction as text.
-                    const std::string& instructionAsText = isaAsText.substr(posFirst32BitEnd, posEnd - posFirst32BitEnd);
+                    const string& instructionAsText = isaAsText.substr(posFirst32BitEnd, posEnd - posFirst32BitEnd);
                     const size_t numOfCharactersInInstr = instructionAsText.size();
 
                     if (numOfCharactersInInstr == INSTRUCTION_32_LENGTH)
@@ -1201,7 +1292,7 @@ bool beProgramBuilderDX::GetIsaSize(const std::string& isaAsText, size_t& sizeIn
     return ret;
 }
 
-bool beProgramBuilderDX::GetWavefrontSize(const std::string& deviceName, size_t& wavefrontSize) const
+bool beProgramBuilderDX::GetWavefrontSize(const string& deviceName, size_t& wavefrontSize) const
 {
     bool ret = false;
     wavefrontSize = 0;
@@ -1218,39 +1309,81 @@ bool beProgramBuilderDX::GetWavefrontSize(const std::string& deviceName, size_t&
     return ret;
 }
 
-void beProgramBuilderDX::SetDeviceElf(const std::string& deviceName, CElf* pElf)
+
+string beProgramBuilderDX::ToLower(const string& str) const
+{
+    string result;
+    transform(str.begin(), str.end(),
+              inserter(result, result.begin()), ::tolower);
+    return result;
+}
+
+void beProgramBuilderDX::SetDeviceElf(const string& deviceName, const AmdDxGsaCompileShaderOutput& shaderOutput)
 {
     if (!deviceName.empty())
     {
         // First, convert the device name to lower case.
-        std::string deviceNameLowerCase;
-        std::transform(deviceName.begin(), deviceName.end(),
-                       std::inserter(deviceNameLowerCase, deviceNameLowerCase.begin()), ::tolower);
+        string deviceNameLowerCase = ToLower(deviceName);
 
         // Update the container.
-        m_compiledElf[deviceNameLowerCase] = pElf;
+        CelfBinaryPair& celfpair = m_compiledElf[deviceNameLowerCase];
+
+        celfpair.second.assign((char*)shaderOutput.pShaderBinary, (char*)shaderOutput.pShaderBinary + shaderOutput.shaderBinarySize);
+        // Open the binaries as CElf objects.
+        celfpair.first = new CElf(celfpair.second);
     }
 }
 
-CElf* beProgramBuilderDX::GetDeviceElf(const std::string& deviceName) const
+bool beProgramBuilderDX::GetDeviceElfBinPair(const string& deviceName, CelfBinaryPair& elfBinPair) const
 {
-    CElf* pRet = nullptr;
+    bool result =  false;
+
 
     if (!deviceName.empty())
     {
         // First, convert the device name to lower case.
-        std::string deviceNameLowerCase;
-        std::transform(deviceName.begin(), deviceName.end(),
-                       std::inserter(deviceNameLowerCase, deviceNameLowerCase.begin()), ::tolower);
+        string deviceNameLowerCase = ToLower(deviceName);
 
         // Look for the relevant element.
         auto iter = m_compiledElf.find(deviceNameLowerCase);
 
         if (iter != m_compiledElf.end())
         {
-            pRet = iter->second;
+            elfBinPair = iter->second;
+            result = true;
         }
     }
 
+    return result;
+}
+
+CElf* beProgramBuilderDX::GetDeviceElf(const string& deviceName) const
+{
+    CElf* pRet = nullptr;
+    CelfBinaryPair elfBinPair;
+
+    if (GetDeviceElfBinPair(deviceName, elfBinPair))
+    {
+        pRet = elfBinPair.first;
+    }
+
     return pRet;
+}
+
+vector<char> beProgramBuilderDX::GetDeviceBinaryElf(const string& deviceName) const
+{
+    vector<char> result;
+    CelfBinaryPair elfBinPair;
+
+    if (GetDeviceElfBinPair(deviceName, elfBinPair))
+    {
+        result = elfBinPair.second;
+    }
+
+    return result;
+}
+
+void beProgramBuilderDX::SetPublicDeviceNames(const std::set<std::string>& publicDeviceNames)
+{
+    m_publicDeviceNames = publicDeviceNames;
 }
