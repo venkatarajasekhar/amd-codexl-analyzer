@@ -58,7 +58,6 @@ sources = \
 	"src/kcUtils.cpp",
 	"src/kcParseCmdLine.cpp",
 	"src/kcCLICommanderCL.cpp",
-	"src/kcCLICommanderGL.cpp",
 	"src/kcCLICommanderOpenGL.cpp",
 	"src/kcCLICommanderVulkan.cpp",
 	"src/kcOpenGLStatisticsParser.cpp",
