@@ -43,7 +43,6 @@ env.Append( CPPPATH = [
 	env['CXL_common_dir'] + '/Src/DeviceInfo',
 	env['CXL_common_dir'] + '/Lib/AMD/sp3/Include/Public',
 	env['CXL_common_dir'] + '/Src/DynamicLibraryModule',
-	env['CXL_common_dir'] + '/Src/ACLModuleManager',
 	env['CXL_common_dir'] + '/Lib/AMD/APPSDK/3-0/include',
 	env['CXL_common_dir'] + '/Lib/AMD/ACL/TOT/include',
 ])
@@ -62,7 +61,6 @@ commonsrc_files = Split(
 	buildDirPath + '/CElf/Src/CElfSection.cpp ' +
 	buildDirPath + '/CElf/Src/CElfStringTable.cpp ' +
 	buildDirPath + '/CElf/Src/CElfSymbolTable.cpp ' +
-	buildDirPath + '/ACLModuleManager/ACLModuleManager.cpp ' +
 	buildDirPath + '/DeviceInfo/DeviceInfoUtils.cpp'
 	)
 
