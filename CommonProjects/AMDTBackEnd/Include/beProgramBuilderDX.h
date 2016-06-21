@@ -142,7 +142,7 @@ public:
     /// \returns               a status.
     beKA::beStatus GetDxShaderISAText(const std::string& device, const std::string& shader,
                                       const std::string& target, std::string& isaBuffer);
-    beKA::beStatus GetDxShaderIL(const std::string& device, const std::string& shader, const std::string& target, std::string& isaBuffer);
+    beKA::beStatus GetDxShaderIL(const std::string& device, std::string& isaBuffer);
     /// Extract the size in bytes of ISA code.
     /// \param[in]  isaAsText       the ISA code as text.
     /// \param[out] sizeInBytes    the calculated size in bytes.
