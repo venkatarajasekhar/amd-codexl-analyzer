@@ -168,10 +168,9 @@ beKA::beStatus beProgramBuilderVulkan::GetDeviceTable(std::vector<GDT_GfxCardInf
             }
         }
 
-        std::sort(table.begin(), table.end(), beUtils::GfxCardInfoSortPredicate);
-
         if (!table.empty())
         {
+            std::sort(table.begin(), table.end(), beUtils::GfxCardInfoSortPredicate);
             ret = beKA::beStatus_SUCCESS;
         }
     }
@@ -543,6 +542,9 @@ beKA::beStatus beProgramBuilderVulkan::Compile(const VulkanOptions& vulkanOption
             osFilePath tmpFilePath(osFilePath::OS_TEMP_DIRECTORY);
             tmpFilePath.setFileName(AMPSPV_TMP_OUTPUT_FILE);
             cmd << "out.glslLog=\"" << tmpFilePath.asString().asASCIICharArray() << "\" ";
+
+            // No default output (only generate the output files that we explicitly specified).
+            cmd << "defaultOutput=0";
 
             // Launch amdspv.
             gtString amdspvOutput;
