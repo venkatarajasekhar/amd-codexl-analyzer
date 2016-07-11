@@ -371,14 +371,23 @@ beKA::beStatus beProgramBuilderDX::CompileDXAsm(const string& programSource, con
     memset(&shaderInput, 0, sizeof(AmdDxGsaCompileShaderInput));
     AmdDxGsaCompileOption compileOptions[1];
     memset(compileOptions, 0, sizeof(AmdDxGsaCompileOption));
+    if (dxOptions.m_isShaderIntrinsicsEnabled)
+    {
+        // Enable D3D11 shader intrinsics. The value does not matter, only the setting does.
+        compileOptions[0].setting = AmdDxGsaCompileOptionEnum::AmdDxGsaEnableShaderIntrinsics;
+        shaderInput.numCompileOptions = 1;
+    }
+    else
+    {
+        shaderInput.numCompileOptions = 0;
+    }
+    shaderInput.pCompileOptions = compileOptions;
 
     shaderInput.chipFamily = dxOptions.m_ChipFamily;
     shaderInput.chipRevision = dxOptions.m_ChipRevision;
     // The code directly follows the header.
     shaderInput.pShaderByteCode = (char*)(byteCodeHeader + 1);
     shaderInput.byteCodeLength = byteCodeHeader->dwChunkDataSize;
-    shaderInput.pCompileOptions = compileOptions;
-    shaderInput.numCompileOptions = 0;
 
     AmdDxGsaCompileShaderOutput shaderOutput;
     memset(&shaderOutput, 0, sizeof(AmdDxGsaCompileShaderOutput));
@@ -1045,7 +1054,7 @@ const CElfSection* beProgramBuilderDX::GetISATextSection(const string& deviceNam
     return result;
 }
 
-const CElfSection* beProgramBuilderDX::GetILSection(const std::string& deviceName) const
+const CElfSection* beProgramBuilderDX::GetILDisassemblySection(const std::string& deviceName) const
 {
     // Get the relevant ELF section for the required device.
     const CElfSection* result = nullptr;
@@ -1053,9 +1062,9 @@ const CElfSection* beProgramBuilderDX::GetILSection(const std::string& deviceNam
 
     if (pElf != nullptr)
     {
-        // There is no symbol table.  We just need the .text section.
-        const string IL_SECTION_NAME(".amdil_disassembly");
-        result = pElf->GetSection(IL_SECTION_NAME);
+        // There is no symbol table.  We just need the ELF section.
+        const string IL_DISASSEMBLY_SECTION_NAME(".amdil_disassembly");
+        result = pElf->GetSection(IL_DISASSEMBLY_SECTION_NAME);
     }
 
     return result;
@@ -1155,10 +1164,10 @@ beKA::beStatus beProgramBuilderDX::GetDxShaderISAText(const string& deviceName, 
 
 beKA::beStatus beProgramBuilderDX::GetDxShaderIL(const std::string& device, std::string& isaBuffer)
 {
-    beKA::beStatus ret = beStatus_Invalid;
+    beKA::beStatus ret = beStatus_NO_IL_FOR_DEVICE;
 
     // Get the relevant ELF section for the required device.
-    const CElfSection* pAmdilDiassemblySection = GetILSection(device);
+    const CElfSection* pAmdilDiassemblySection = GetILDisassemblySection(device);
 
     if (pAmdilDiassemblySection != nullptr)
     {
@@ -1171,10 +1180,6 @@ beKA::beStatus beProgramBuilderDX::GetDxShaderIL(const std::string& device, std:
             // We are done.
             ret = beKA::beStatus_SUCCESS;
         }
-    }
-    else
-    {
-        ret = beStatus_NO_ISA_FOR_DEVICE;
     }
 
     return ret;

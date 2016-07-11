@@ -5,6 +5,9 @@
 #include <string>
 #include <utility>
 
+// GSA.
+#include <AMDTBackEnd/Include/Common/AmdDxGsaCompile.h>
+
 using namespace beKA;
 class CElf;
 class CElfSection;
@@ -97,7 +100,11 @@ public:
         /// So -DDEBUG=1 would be "DEBUG", "1"
         std::vector<std::pair<std::string, std::string> > m_defines;
 
+        /// Additional include directories for searching included headers.
         std::vector<std::string> m_includeDirectories;
+
+        /// True to enable AMD D3D11 Shader Intrinsic extension.
+        bool m_isShaderIntrinsicsEnabled = false;
 
         /// Save the MS Blob as text
         bool m_bDumpMSIntermediate;
@@ -213,7 +220,7 @@ private: // functions
     beKA::beStatus CompileDXAsm(const std::string& programSource, const DXOptions& dxOptions);
     beKA::beStatus CompileDXAsmT(const std::string& programSource, const DXOptions& dxOptions);
     const CElfSection* GetISATextSection(const std::string& deviceName) const;
-    const CElfSection* GetILSection(const std::string& deviceName) const;
+    const CElfSection* GetILDisassemblySection(const std::string& deviceName) const;
     std::string ToLower(const std::string& str) const;
     /// Clears the member variables which hold the build outputs.
     void ClearFormerBuildOutputs();
