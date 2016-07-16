@@ -206,7 +206,6 @@
 // ***************************
 
 // FULL-RATE
-
 // Not implemented by the hardware (handled by sequencer).
 #define VOP2_NO_HW_IMPL_V_MAC_F32          "V_MAC_F32"
 #define VOP2_NO_HW_IMPL_V_MAC_LEGACY_F32   "V_MAC_LEGACY_F32"
