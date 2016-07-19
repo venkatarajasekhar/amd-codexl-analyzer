@@ -100,7 +100,6 @@ commonLinkedLibraries = \
 	"GLEW",
 	"libboost_system",
 	"dl",
-	"sp3",
 ]
 
 # Contains all linked libraries:
