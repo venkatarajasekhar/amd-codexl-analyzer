@@ -375,13 +375,21 @@ beKA::beStatus beProgramBuilderDX::CompileDXAsm(const string& programSource, con
 
     AmdDxGsaCompileShaderInput shaderInput;
     memset(&shaderInput, 0, sizeof(AmdDxGsaCompileShaderInput));
-    AmdDxGsaCompileOption compileOptions[1];
-    memset(compileOptions, 0, sizeof(AmdDxGsaCompileOption));
+    AmdDxGsaCompileOption compileOptions[2];
+    memset(compileOptions, 0, 2*sizeof(AmdDxGsaCompileOption));
     if (dxOptions.m_isShaderIntrinsicsEnabled)
     {
         // Enable D3D11 shader intrinsics. The value does not matter, only the setting does.
         compileOptions[0].setting = AmdDxGsaCompileOptionEnum::AmdDxGsaEnableShaderIntrinsics;
         shaderInput.numCompileOptions = 1;
+
+        if (dxOptions.m_UAVSlot > -1)
+        {
+            // Handle the case where the user defined a UAV slot for shader intrinsics.
+            compileOptions[1].setting = AmdDxGsaCompileOptionEnum::AmdDxGsaShaderIntrinsicsUAVSlot;
+            compileOptions[1].value = dxOptions.m_UAVSlot;
+            shaderInput.numCompileOptions = 2;
+        }
     }
     else
     {

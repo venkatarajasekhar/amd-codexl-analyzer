@@ -74,7 +74,7 @@ bool ParseCmdLine(int argc, char* argv[], Config& config)
         po::options_description dxOpt("DirectX Shader Analyzer options");
         dxOpt.add_options()
         ("function,f",     po::value<string>(&config.m_Function), "D3D shader to compile, DX ASM shader.")
-
+        ("profile,p", po::value<string>(&config.m_Profile), "Profile to use for compilation.  REQUIRED.\nFor example: vs_5_0, ps_5_0, etc.")
         ("DXFlags",        po::value<unsigned int>(&config.m_DXFlags),                   "Flags to pass to D3DCompile.")
         ("DXLocation",     po::value<string>(&config.m_DXLocation),                      "Location to the D3DCompiler Dll required for compilation. If none is specified, the default D3D compiler that is bundled with the Analyzer will be used.")
         ("FXC",            po::value<string>(&config.m_FXC),                             "FXC Command Line. Use full path and specify all arguments in \"\". For example:\n"
@@ -86,7 +86,8 @@ bool ParseCmdLine(int argc, char* argv[], Config& config)
          "   In order to use it, DXAsm must be specified. /Fo switch must be used and output file must be the same as input file for the CodeXLKernelAnalyzer.")
 #endif
         ("DumpMSIntermediate", po::value<string>(&config.m_DumpMSIntermediate), "Location to save the MS Blob as text. ")
-        ("intrinsic", "Enable AMD D3D11 Shader Intrinsic extension.")
+        ("intrinsics", "Enable AMD D3D11 Shader Intrinsics extension.")
+        ("UAVSlot", po::value<int>(&config.m_UAVSlot), "This value should be in the range of [0,63].\nThe driver will use the slot to track which UAV is being used to specify the intrinsic. The UAV slot that is selected cannot be used for any other purposes.\nThis option is only relevant when AMD D3D11 Shader Intrinsics is enabled (specify --intrinsics).")
         ;
 
         po::options_description macroAndIncludeOpt("Macro and Include paths Options");
@@ -120,11 +121,6 @@ bool ParseCmdLine(int argc, char* argv[], Config& config)
 #endif
         ;
 
-        po::options_description gldxOpt("");
-        gldxOpt.add_options()
-        ("profile,p", po::value<string>(&config.m_Profile), "Profile to use for compilation.  REQUIRED."
-         "\nFor example: vs_5_0, ps_5_0, etc.");
-
         // Vulkan-specific.
         po::options_description pipelinedOpt("");
         pipelinedOpt.add_options()
@@ -143,7 +139,7 @@ bool ParseCmdLine(int argc, char* argv[], Config& config)
 
         // all options available from command line
         po::options_description allOpt;
-        allOpt.add(genericOpt).add(macroAndIncludeOpt).add(clOpt).add(hiddenOpt).add(dxOpt).add(gldxOpt).add(pipelinedOpt);
+        allOpt.add(genericOpt).add(macroAndIncludeOpt).add(clOpt).add(hiddenOpt).add(dxOpt).add(pipelinedOpt);
 
         po::variables_map vm;
 
@@ -176,7 +172,7 @@ bool ParseCmdLine(int argc, char* argv[], Config& config)
 
         if (vm.count("intrinsics"))
         {
-            config.m_EnableShaderIntrinsic = true;
+            config.m_EnableShaderIntrinsics = true;
         }
 
         if (vm.count("retain-user-filename"))
@@ -350,7 +346,6 @@ bool ParseCmdLine(int argc, char* argv[], Config& config)
             cout << genericOpt << endl;
             cout << macroAndIncludeOpt << endl;
             cout << dxOpt << endl;
-            cout << gldxOpt << endl;
             cout << "Examples:" << endl;
             cout << " View supported ASICS for DirectX: " << programName << " -s hlsl -l" << endl;
             cout << " Extract the ISA: " << programName << " -s hlsl -f VsMain -p vs_5_0 --isa c:\\files\\myShader.isa c:\\files\\myShader.hlsl" << endl ;

@@ -41,6 +41,7 @@ typedef enum _AmdDxGsaCompileOptionEnum
     AmdDxGsaIfConversionHeuristicOgl,
     AmdDxGsaIfConversionAlways,
     AmdDxGsaEnableShaderIntrinsics,
+    AmdDxGsaShaderIntrinsicsUAVSlot,
     AmdDxGsaCompileOptionLast
 } AmdDxGsaCompileOptionEnum;
 

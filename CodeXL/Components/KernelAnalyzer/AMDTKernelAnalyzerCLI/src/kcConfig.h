@@ -77,7 +77,8 @@ public:
     std::string              m_DXLocation;       ///< D3DCompiler dll location
     std::string              m_FXC;               ///< FXC path and arguments
     std::string              m_DumpMSIntermediate; /// the location where to save the ms blob as text
-    bool                     m_EnableShaderIntrinsic; /// true to enable DX shader intrinsics
+    bool                     m_EnableShaderIntrinsics; /// true to enable DX shader intrinsics.
+    int                      m_UAVSlot;               /// User-defined UAV slot for shader intrinsics.
 
 
     // Vulkan.

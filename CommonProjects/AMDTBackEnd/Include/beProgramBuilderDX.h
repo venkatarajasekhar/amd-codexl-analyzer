@@ -103,7 +103,11 @@ public:
         /// Additional include directories for searching included headers.
         std::vector<std::string> m_includeDirectories;
 
-        /// True to enable AMD D3D11 Shader Intrinsic extension.
+        /// User-defined UAV Slot value for AMD D3D11 Shader Intrinsics.
+        /// This value should be in the range of [0,63].
+        int m_UAVSlot = -1;
+
+        /// True to enable AMD D3D11 Shader Intrinsics extension.
         bool m_isShaderIntrinsicsEnabled = false;
 
         /// Save the MS Blob as text

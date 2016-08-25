@@ -55,7 +55,8 @@ Config::Config() :
     m_DXLocation(),
     m_FXC(),
     m_DumpMSIntermediate(),
-    m_EnableShaderIntrinsic(false)
+    m_EnableShaderIntrinsics(false),
+    m_UAVSlot(-1)
 {
 }
 
@@ -78,7 +79,8 @@ Config::dump(ostream& out) const
     out << "m_bVerbose:              " << m_bVerbose << endl;
     out << "m_FXC:                  " << m_FXC << endl;
     out << "m_DumpMSIntermediate:   " << m_DumpMSIntermediate << endl;
-    out << "m_EnableShaderIntrinsics:   " << m_EnableShaderIntrinsic << endl;
+    out << "m_EnableShaderIntrinsics:   " << m_EnableShaderIntrinsics << endl;
+    out << "m_UAVSlot:   " << m_UAVSlot << endl;
 
     out << "m_ASICs:               ";
 
