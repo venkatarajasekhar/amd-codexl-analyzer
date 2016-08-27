@@ -76,7 +76,6 @@
     <Import Project="$(CommonDir)\Lib\AMD\DX10ASM\Global-DX10ASM-VS2015.props" />
     <Import Project="$(CommonDir)\Lib\Ext\Boost\Global-Boost-2015.props" />
     <Import Project="$(CommonDir)\Lib\Ext\Windows-Kits\Global-WindowsSDK.props" />
-    <Import Project="$(CommonDir)\Lib\Ext\glew\Global-GLEW.props" />
     <Import Project="$(CommonDir)\Src\ADLUtil\Global-ADLUtil.props" />
     <Import Project="$(CommonDir)\Src\AMDTMutex\Global-AMDTMutex.props" />
     <Import Project="$(CommonDir)\Src\CElf\Global-CElf.props" />
@@ -95,7 +94,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.;./Include/GL;./Include/Common;$(CommonDir)\Src\ShaderUtils;$(CommonDir)\Src\ShaderUtils\DX10;$(CommonDir)\Src\ShaderUtils\DX11;$(CommonDir)\Src\ACLModuleManager;$(CommonDir)\DX10ASM;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -114,8 +113,6 @@
       <ImportLibrary>$(AMDTOutputDir)$(Configuration)\arch\$(TargetName).lib</ImportLibrary>
       <TargetMachine Condition="'$(Platform)'=='x64'">MachineX64</TargetMachine>
       <AdditionalDependencies>opengl32.lib;AMDTBaseTools$(GDTProjectSuffix).lib;AMDTOSWrappers$(GDTProjectSuffix).lib;AMDTOSAPIWrappers$(GDTProjectSuffix).lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalDependencies Condition="'$(Platform)'=='Win32'">.\Lib\glew.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalDependencies Condition="'$(Platform)'=='x64'">glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(Configuration)'=='Release'">%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(AMDTOutputDir)$(Configuration)\arch;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>
@@ -127,7 +124,6 @@
       <PreprocessorDefinitions>AMDTANALYSISBACKEND_STATIC;AMDTOSAPIWRAPPERS_STATIC;AMDTOSWRAPPERS_STATIC;AMDTBASETOOLS_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(DX10ASMDir)\Lib\$(Platform)\$(AMDTConfiguration);$(ELFDir)\lib\$(GDTPlatform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>MSVCRTD</IgnoreSpecificDefaultLibraries>
       <TargetMachine Condition="'$(Platform)'=='x64'">MachineX64</TargetMachine>
